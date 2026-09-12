@@ -31,36 +31,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
+	"github.com/aldok10/zara-rpc/auth"
 	"github.com/aldok10/zara-rpc/codes"
 	"github.com/aldok10/zara-rpc/encoding"
 	"github.com/aldok10/zara-rpc/metadata"
 	"github.com/aldok10/zara-rpc/runtime"
 	"github.com/aldok10/zara-rpc/status"
 )
-
-// authToken extracts a bearer token from the Authorization header, the
-// "token" query parameter, or the "session" cookie, in that order. This
-// shows how handlers read transport payloads uniformly over HTTP and gRPC.
-func authToken(ctx runtime.Ctx) string {
-	if h := ctx.Header().Get(metadata.HeaderAuthorization); strings.HasPrefix(h, "Bearer ") {
-		return strings.TrimPrefix(h, "Bearer ")
-	}
-	if t := ctx.Query().Get("token"); t != "" {
-		return t
-	}
-	if c, err := ctx.Cookie("session"); err == nil {
-		return c.Value
-	}
-	return ""
-}
-
-// requireAuth rejects requests without a valid token.
-func requireAuth(ctx runtime.Ctx) error {
-	if authToken(ctx) != "secret-token-123" {
-		return status.NewErrorf(codes.CodeUnauthenticated, "missing or invalid auth token")
-	}
-	return nil
-}
 
 // grpcCtx converts incoming gRPC metadata into a runtime.Ctx so handlers
 // see the same header API over both transports. The protobuf codec and the
@@ -75,6 +52,13 @@ func grpcCtx(ctx context.Context) runtime.Ctx {
 		}
 	}
 	return runtime.NewCtx(ctx, metadata.RequestMeta{Header: header}, encoding.ProtoCodec{}).WithProtocol("grpc")
+}
+
+// grpcCtxFor is grpcCtx plus the procedure spec, which the RBAC policy
+// matches on (ctx.Spec().Procedure). The gRPC adapter sets it per method so
+// the same policy protects both transports.
+func grpcCtxFor(ctx context.Context, procedure string) runtime.Ctx {
+	return grpcCtx(ctx).WithSpec(runtime.Spec{Procedure: procedure})
 }
 
 // usersService implements usersv1.UsersServiceHandler (the zararpc HTTP
@@ -99,11 +83,9 @@ func (s *usersService) GetUser(ctx runtime.Ctx, req *usersv1.GetUserRequest) (*u
 	if typed := ctx.Request[usersv1.GetUserRequest](); typed != nil && typed.Id != req.Id {
 		return nil, status.NewErrorf(codes.CodeInternal, "ctx payload mismatch")
 	}
-	// Auth: reads the token from header, query param, or cookie — same
-	// code path regardless of whether the request came via HTTP or gRPC.
-	if err := requireAuth(ctx); err != nil {
-		return nil, err
-	}
+	// Auth is enforced by the interceptor chain (auth.JWTValidator +
+	// auth.StaticAuthorizer) on both transports — the handler no longer
+	// checks tokens itself.
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	u, ok := s.users[req.Id]
@@ -237,35 +219,35 @@ type grpcUsersService struct {
 }
 
 func (g *grpcUsersService) GetUser(ctx context.Context, req *usersv1.GetUserRequest) (*usersv1.User, error) {
-	return g.usersService.GetUser(grpcCtx(ctx), req)
+	return g.usersService.GetUser(grpcCtxFor(ctx, "/acme.users.v1.UsersService/GetUser"), req)
 }
 
 func (g *grpcUsersService) ListUsers(ctx context.Context, req *usersv1.ListUsersRequest) (*usersv1.ListUsersResponse, error) {
-	return g.usersService.ListUsers(grpcCtx(ctx), req)
+	return g.usersService.ListUsers(grpcCtxFor(ctx, "/acme.users.v1.UsersService/ListUsers"), req)
 }
 
 func (g *grpcUsersService) CreateUser(ctx context.Context, req *usersv1.CreateUserRequest) (*usersv1.User, error) {
-	return g.usersService.CreateUser(grpcCtx(ctx), req)
+	return g.usersService.CreateUser(grpcCtxFor(ctx, "/acme.users.v1.UsersService/CreateUser"), req)
 }
 
 func (g *grpcUsersService) UpdateUser(ctx context.Context, req *usersv1.UpdateUserRequest) (*usersv1.User, error) {
-	return g.usersService.UpdateUser(grpcCtx(ctx), req)
+	return g.usersService.UpdateUser(grpcCtxFor(ctx, "/acme.users.v1.UsersService/UpdateUser"), req)
 }
 
 func (g *grpcUsersService) DeleteUser(ctx context.Context, req *usersv1.DeleteUserRequest) (*emptypb.Empty, error) {
-	return g.usersService.DeleteUser(grpcCtx(ctx), req)
+	return g.usersService.DeleteUser(grpcCtxFor(ctx, "/acme.users.v1.UsersService/DeleteUser"), req)
 }
 
 func (g *grpcUsersService) Echo(ctx context.Context, req *usersv1.EchoRequest) (*usersv1.EchoResponse, error) {
-	return g.usersService.Echo(grpcCtx(ctx), req)
+	return g.usersService.Echo(grpcCtxFor(ctx, "/acme.users.v1.UsersService/Echo"), req)
 }
 
 func (g *grpcUsersService) WatchUsers(req *usersv1.WatchUsersRequest, stream grpc.ServerStreamingServer[usersv1.User]) error {
-	return g.usersService.WatchUsers(grpcCtx(stream.Context()), req, &grpcServerStreamAdapter{stream})
+	return g.usersService.WatchUsers(grpcCtxFor(stream.Context(), "/acme.users.v1.UsersService/WatchUsers"), req, &grpcServerStreamAdapter{stream})
 }
 
 func (g *grpcUsersService) UploadUsers(stream grpc.ClientStreamingServer[usersv1.User, usersv1.UploadUsersResponse]) error {
-	resp, err := g.usersService.UploadUsers(grpcCtx(stream.Context()), &grpcClientStreamAdapter{stream})
+	resp, err := g.usersService.UploadUsers(grpcCtxFor(stream.Context(), "/acme.users.v1.UsersService/UploadUsers"), &grpcClientStreamAdapter{stream})
 	if err != nil {
 		return err
 	}
@@ -273,7 +255,7 @@ func (g *grpcUsersService) UploadUsers(stream grpc.ClientStreamingServer[usersv1
 }
 
 func (g *grpcUsersService) Chat(stream grpc.BidiStreamingServer[usersv1.ChatMessage, usersv1.ChatMessage]) error {
-	return g.usersService.Chat(grpcCtx(stream.Context()), &grpcBidiStreamAdapter{stream})
+	return g.usersService.Chat(grpcCtxFor(stream.Context(), "/acme.users.v1.UsersService/Chat"), &grpcBidiStreamAdapter{stream})
 }
 
 // grpcServerStreamAdapter adapts grpc.ServerStreamingServer to
@@ -334,20 +316,100 @@ func streamInterceptor(srv any, ss grpc.ServerStream, info *grpc.StreamServerInf
 	return nil
 }
 
+// authChain is the shared authentication + authorization chain applied to
+// both transports: JWT validation first (authn), then the RBAC policy
+// (authz). The same runtime.Interceptor values wrap the HTTP mux and the
+// gRPC adapters, so one policy protects every transport.
+func authChain() ([]runtime.Interceptor, error) {
+	validator, err := auth.NewJWTValidator([]byte("secret-token-123"))
+	if err != nil {
+		return nil, err
+	}
+	authorizer, err := auth.NewStatic(usersPolicy)
+	if err != nil {
+		return nil, err
+	}
+	return []runtime.Interceptor{validator.Interceptor(), authorizer.Interceptor()}, nil
+}
+
+// usersPolicy is the demo RBAC policy:
+//
+//   - admins (role=admin) may call anything;
+//   - any authenticated caller may read (Get* prefix) and Echo;
+//   - readers (role=user) are denied DeleteUser.
+//
+// The JWT interceptor runs first, so by the time this policy is evaluated
+// every request carries validated claims.
+const usersPolicy = `{
+  "name": "users-policy",
+  "allow_rules": [
+    {"name": "admins", "principals": [{"authenticated": {"claim": "role", "value": "admin"}}], "permissions": [{"any": true}]},
+    {"name": "readers", "principals": [{"any": true}], "permissions": [
+      {"requested_path": {"prefix": "/acme.users.v1.UsersService/Get"}},
+      {"requested_path": {"exact": "/acme.users.v1.UsersService/Echo"}}
+    ]}
+  ],
+  "deny_rules": [
+    {"name": "no-delete-for-readers", "principals": [{"authenticated": {"claim": "role", "value": "user"}}], "permissions": [{"requested_path": {"exact": "/acme.users.v1.UsersService/DeleteUser"}}]}
+  ]
+}`
+
+// authUnaryInterceptor runs the zararpc auth chain on the gRPC path. The
+// Ctx is built from the incoming gRPC metadata with the procedure spec set,
+// so the same policy matches on ctx.Spec().Procedure over both transports.
+// The auth chain never inspects the request/response messages, so they are
+// passed through as nil; the real response is captured in the closure.
+func authUnaryInterceptor(chain []runtime.Interceptor) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		rctx := grpcCtxFor(ctx, "/"+info.FullMethod)
+		var resp any
+		wrapped := runtime.ChainInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
+			r, err := handler(ctx.Context(), req)
+			resp = r
+			return nil, err
+		})
+		if _, err := wrapped(rctx, nil); err != nil {
+			return nil, zaraToGRPC(err)
+		}
+		return resp, nil
+	}
+}
+
+// authStreamInterceptor runs the auth chain once at stream start.
+func authStreamInterceptor(chain []runtime.Interceptor) grpc.StreamServerInterceptor {
+	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		rctx := grpcCtxFor(ss.Context(), "/"+info.FullMethod)
+		wrapped := runtime.ChainInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
+			return nil, nil
+		})
+		if _, err := wrapped(rctx, nil); err != nil {
+			return zaraToGRPC(err)
+		}
+		return handler(srv, ss)
+	}
+}
+
 func main() {
 	svc := &usersService{users: make(map[string]*usersv1.User)}
 
+	chain, err := authChain()
+	if err != nil {
+		log.Fatalf("auth chain: %v", err)
+	}
+
 	// gRPC server with reflection (grpcurl -plaintext localhost:8080 list).
-	// Interceptors convert zararpc errors to gRPC status errors.
+	// Interceptors convert zararpc errors to gRPC status errors and run the
+	// same auth chain as the HTTP mux.
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(unaryInterceptor),
-		grpc.StreamInterceptor(streamInterceptor),
+		grpc.ChainUnaryInterceptor(unaryInterceptor, authUnaryInterceptor(chain)),
+		grpc.ChainStreamInterceptor(streamInterceptor, authStreamInterceptor(chain)),
 	)
 	usersv1.RegisterUsersServiceServer(grpcServer, &grpcUsersService{usersService: svc})
 	reflection.Register(grpcServer)
 
-	// HTTP mux: REST + SSE + NDJSON + WebSocket.
-	mux := runtime.NewMux()
+	// HTTP mux: REST + SSE + NDJSON + WebSocket, protected by the same
+	// auth chain.
+	mux := runtime.NewMux(runtime.WithMuxInterceptors(chain...))
 	if err := usersv1.RegisterUsersServiceRoutes(mux, svc); err != nil {
 		log.Fatalf("register service: %v", err)
 	}
