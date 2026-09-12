@@ -5,7 +5,7 @@ package acme.users.v1;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/aldok10/zara-rpc/examples/proto/users/v1;usersv1";
+option go_package = "github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1";
 
 // UsersService demonstrates grpc-gateway-style HTTP endpoint definitions
 // via google.api.http annotations.

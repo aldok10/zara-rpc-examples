@@ -30,8 +30,8 @@ import (
 	grpcstatus "google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/codes"
-	usersv1 "github.com/aldok10/zara-rpc/examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/metadata"
 	"github.com/aldok10/zara-rpc/runtime"
 	"github.com/aldok10/zara-rpc/status"

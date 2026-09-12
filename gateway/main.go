@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	usersv1 "github.com/aldok10/zara-rpc/examples/proto/users/v1"
+	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/runtime"
 )
 

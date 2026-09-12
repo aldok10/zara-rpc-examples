@@ -18,9 +18,9 @@ import (
 	"log"
 	"time"
 
+	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/client"
 	"github.com/aldok10/zara-rpc/encoding"
-	usersv1 "github.com/aldok10/zara-rpc/examples/proto/users/v1"
 )
 
 func main() {

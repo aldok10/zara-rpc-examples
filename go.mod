@@ -1,4 +1,4 @@
-module github.com/aldok10/zara-rpc/examples
+module github.com/aldok10/zara-rpc-examples
 
 go 1.27.0
 

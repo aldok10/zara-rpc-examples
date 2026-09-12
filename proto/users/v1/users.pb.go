@@ -666,7 +666,7 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\n" +
 	"WatchUsers\x12 .acme.users.v1.WatchUsersRequest\x1a\x13.acme.users.v1.User\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/users:watch0\x01\x12e\n" +
 	"\vUploadUsers\x12\x13.acme.users.v1.User\x1a\".acme.users.v1.UploadUsersResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/users:upload(\x01\x12W\n" +
-	"\x04Chat\x12\x1a.acme.users.v1.ChatMessage\x1a\x1a.acme.users.v1.ChatMessage\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/v1/chat(\x010\x01B=Z;github.com/aldok10/zara-rpc/examples/proto/users/v1;usersv1b\x06proto3"
+	"\x04Chat\x12\x1a.acme.users.v1.ChatMessage\x1a\x1a.acme.users.v1.ChatMessage\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/v1/chat(\x010\x01B=Z;github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1b\x06proto3"
 
 var (
 	file_users_v1_users_proto_rawDescOnce sync.Once
