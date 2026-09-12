@@ -7,8 +7,7 @@ import (
 )
 
 // TestStructNamedCustomTags proves the (zara.options.tags) field option
-// landed on the generated struct after zararpc-tags applied the overlay to
-// users.pb.go.
+// landed on the generated struct.
 func TestStructNamedCustomTags(t *testing.T) {
 	typ := reflect.TypeOf(StructNamed{})
 

@@ -21,7 +21,6 @@ import (
 )
 
 func main() {
-	// Dial the combined gRPC+HTTP server.
 	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("dial gRPC server: %v", err)

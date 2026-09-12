@@ -233,170 +233,177 @@ const (
 )
 
 // Register_GetUser builds the GetUser endpoint.
-func Register_GetUser(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodGet,
-		UsersService_GetUser_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
+func Register_GetUser(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[GetUserRequest, User])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_GetUser_Path).
+		SetRPC(UsersService_GetUser_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.GetUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_GetUser_Method),
-		runtime.WithRequestBuilder(request_UsersService_GetUser_0),
-	)
+		}).
+		SetRequestBuilder(request_UsersService_GetUser_0).
+		Build()
 }
 
 // Register_ListUsers builds the ListUsers endpoint.
-func Register_ListUsers(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodGet,
-		UsersService_ListUsers_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[ListUsersRequest]) (*runtime.Response[ListUsersResponse], error) {
+func Register_ListUsers(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[ListUsersRequest, ListUsersResponse])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_ListUsers_Path).
+		SetRPC(UsersService_ListUsers_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[ListUsersRequest]) (*runtime.Response[ListUsersResponse], error) {
 			resp, err := svc.ListUsers(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_ListUsers_Method),
-		runtime.WithRequestBuilder(request_UsersService_ListUsers_0),
-	)
+		}).
+		SetRequestBuilder(request_UsersService_ListUsers_0).
+		Build()
 }
 
 // Register_CreateUser builds the CreateUser endpoint.
-func Register_CreateUser(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodPost,
-		UsersService_CreateUser_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[CreateUserRequest]) (*runtime.Response[User], error) {
+func Register_CreateUser(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[CreateUserRequest, User])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(UsersService_CreateUser_Path).
+		SetRPC(UsersService_CreateUser_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[CreateUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.CreateUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_CreateUser_Method),
-		runtime.WithBody("*"),
-		runtime.WithRequestBuilder(request_UsersService_CreateUser_0),
-	)
+		}).
+		SetBody("*").
+		SetRequestBuilder(request_UsersService_CreateUser_0).
+		Build()
 }
 
 // Register_UpdateUser builds the UpdateUser endpoint.
-func Register_UpdateUser(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodPut,
-		UsersService_UpdateUser_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[UpdateUserRequest]) (*runtime.Response[User], error) {
+func Register_UpdateUser(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[UpdateUserRequest, User])(&op).
+		SetMethod(http.MethodPut).
+		SetPath(UsersService_UpdateUser_Path).
+		SetRPC(UsersService_UpdateUser_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[UpdateUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.UpdateUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_UpdateUser_Method),
-		runtime.WithBody("*"),
-		runtime.WithRequestBuilder(request_UsersService_UpdateUser_0),
-	)
+		}).
+		SetBody("*").
+		SetRequestBuilder(request_UsersService_UpdateUser_0).
+		Build()
 }
 
 // Register_DeleteUser builds the DeleteUser endpoint.
-func Register_DeleteUser(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodDelete,
-		UsersService_DeleteUser_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[DeleteUserRequest]) (*runtime.Response[emptypb.Empty], error) {
+func Register_DeleteUser(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[DeleteUserRequest, emptypb.Empty])(&op).
+		SetMethod(http.MethodDelete).
+		SetPath(UsersService_DeleteUser_Path).
+		SetRPC(UsersService_DeleteUser_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[DeleteUserRequest]) (*runtime.Response[emptypb.Empty], error) {
 			resp, err := svc.DeleteUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_DeleteUser_Method),
-		runtime.WithRequestBuilder(request_UsersService_DeleteUser_0),
-	)
+		}).
+		SetRequestBuilder(request_UsersService_DeleteUser_0).
+		Build()
 }
 
 // Register_Echo builds the Echo endpoint.
-func Register_Echo(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodPost,
-		UsersService_Echo_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
+func Register_Echo(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[EchoRequest, EchoResponse])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(UsersService_Echo_Path).
+		SetRPC(UsersService_Echo_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
 			resp, err := svc.Echo(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_Echo_Method),
-		runtime.WithBody("*"),
-		runtime.WithRequestBuilder(request_UsersService_Echo_0),
-	)
+		}).
+		SetBody("*").
+		SetRequestBuilder(request_UsersService_Echo_0).
+		Build()
 }
 
 // Register_Echo_1 builds the Echo endpoint.
-func Register_Echo_1(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewEndpoint(
-		http.MethodGet,
-		UsersService_Echo_Path_1,
-		func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
+func Register_Echo_1(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[EchoRequest, EchoResponse])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_Echo_Path_1).
+		SetRPC(UsersService_Echo_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
 			resp, err := svc.Echo(ctx, req.Msg())
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_Echo_Method),
-		runtime.WithRequestBuilder(request_UsersService_Echo_1),
-	)
+		}).
+		SetRequestBuilder(request_UsersService_Echo_1).
+		Build()
 }
 
 // Register_WatchUsers builds the WatchUsers endpoint.
-func Register_WatchUsers(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewServerStreamEndpoint(
-		http.MethodGet,
-		UsersService_WatchUsers_Path,
-		func(ctx runtime.Ctx, req *runtime.Request[WatchUsersRequest], stream runtime.ServerStream[*User]) error {
+func Register_WatchUsers(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[WatchUsersRequest, *User])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_WatchUsers_Path).
+		SetRPC(UsersService_WatchUsers_Method).
+		SetServerStreamHandler(func(ctx runtime.Ctx, req *runtime.Request[WatchUsersRequest], stream runtime.ServerStream[*User]) error {
 			return svc.WatchUsers(ctx, req.Msg(), stream)
-		},
-		runtime.WithRPC(UsersService_WatchUsers_Method),
-		runtime.WithStreamType(runtime.StreamTypeServer),
-		runtime.WithRequestBuilder(request_UsersService_WatchUsers_0),
-	)
+		}).
+		SetRequestBuilder(request_UsersService_WatchUsers_0).
+		Build()
 }
 
 // Register_UploadUsers builds the UploadUsers endpoint.
-func Register_UploadUsers(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewClientStreamEndpoint(
-		http.MethodPost,
-		UsersService_UploadUsers_Path,
-		func(ctx runtime.Ctx, stream runtime.ClientStream[*User]) (*runtime.Response[UploadUsersResponse], error) {
+func Register_UploadUsers(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[*User, UploadUsersResponse])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(UsersService_UploadUsers_Path).
+		SetRPC(UsersService_UploadUsers_Method).
+		SetClientStreamHandler(func(ctx runtime.Ctx, stream runtime.ClientStream[*User]) (*runtime.Response[UploadUsersResponse], error) {
 			resp, err := svc.UploadUsers(ctx, stream)
 			if err != nil {
 				return nil, err
 			}
 			return runtime.NewResponse(resp), nil
-		},
-		runtime.WithRPC(UsersService_UploadUsers_Method),
-		runtime.WithStreamType(runtime.StreamTypeClient),
-	)
+		}).
+		Build()
 }
 
 // Register_Chat builds the Chat endpoint.
-func Register_Chat(svc UsersServiceHandler) *runtime.Endpoint {
-	return runtime.NewBidiStreamEndpoint(
-		http.MethodPost,
-		UsersService_Chat_Path,
-		func(ctx runtime.Ctx, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
+func Register_Chat(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[*ChatMessage, *ChatMessage])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(UsersService_Chat_Path).
+		SetRPC(UsersService_Chat_Method).
+		SetBidiStreamHandler(func(ctx runtime.Ctx, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
 			return svc.Chat(ctx, stream)
-		},
-		runtime.WithRPC(UsersService_Chat_Method),
-		runtime.WithStreamType(runtime.StreamTypeBidi),
-		runtime.WithBody("*"),
-	)
+		}).
+		SetBody("*").
+		Build()
 }
 
 // RegisterUsersServiceRoutes registers all HTTP endpoints of the service on the mux.

@@ -71,9 +71,7 @@ type usersService struct {
 }
 
 func (s *usersService) GetUser(ctx runtime.Ctx, req *usersv1.GetUserRequest) (*usersv1.User, error) {
-	// Protocol detection: HTTP/JSON requests negotiate the JSON codec;
-	// gRPC requests negotiate the protobuf codec. Handlers can branch on
-	// the transport without knowing where the request came from.
+	// Demo: handlers can branch on the negotiated transport.
 	if ctx.IsJsonCodec() {
 		log.Printf("GetUser: JSON over %s", ctx.Protocol())
 	} else if ctx.IsGRPC() {
@@ -318,9 +316,9 @@ func streamInterceptor(srv any, ss grpc.ServerStream, info *grpc.StreamServerInf
 
 // authChain is the shared authentication + authorization chain applied to
 // both transports: JWT validation first (authn), then the RBAC policy
-// (authz). The same runtime.Interceptor values wrap the HTTP mux and the
+// (authz). The same runtime.UnaryInterceptor values wrap the HTTP mux and the
 // gRPC adapters, so one policy protects every transport.
-func authChain() ([]runtime.Interceptor, error) {
+func authChain() ([]runtime.UnaryInterceptor, error) {
 	validator, err := auth.NewJWTValidator([]byte("secret-token-123"))
 	if err != nil {
 		return nil, err
@@ -329,7 +327,7 @@ func authChain() ([]runtime.Interceptor, error) {
 	if err != nil {
 		return nil, err
 	}
-	return []runtime.Interceptor{validator.Interceptor(), authorizer.Interceptor()}, nil
+	return []runtime.UnaryInterceptor{validator.Interceptor(), authorizer.Interceptor()}, nil
 }
 
 // usersPolicy is the demo RBAC policy:
@@ -359,11 +357,11 @@ const usersPolicy = `{
 // so the same policy matches on ctx.Spec().Procedure over both transports.
 // The auth chain never inspects the request/response messages, so they are
 // passed through as nil; the real response is captured in the closure.
-func authUnaryInterceptor(chain []runtime.Interceptor) grpc.UnaryServerInterceptor {
+func authUnaryInterceptor(chain []runtime.UnaryInterceptor) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		rctx := grpcCtxFor(ctx, "/"+info.FullMethod)
 		var resp any
-		wrapped := runtime.ChainInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
+		wrapped := runtime.ChainUnaryInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
 			r, err := handler(ctx.Context(), req)
 			resp = r
 			return nil, err
@@ -376,10 +374,10 @@ func authUnaryInterceptor(chain []runtime.Interceptor) grpc.UnaryServerIntercept
 }
 
 // authStreamInterceptor runs the auth chain once at stream start.
-func authStreamInterceptor(chain []runtime.Interceptor) grpc.StreamServerInterceptor {
+func authStreamInterceptor(chain []runtime.UnaryInterceptor) grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		rctx := grpcCtxFor(ss.Context(), "/"+info.FullMethod)
-		wrapped := runtime.ChainInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
+		wrapped := runtime.ChainUnaryInterceptors(chain, func(ctx runtime.Ctx, _ runtime.AnyRequest) (runtime.AnyResponse, error) {
 			return nil, nil
 		})
 		if _, err := wrapped(rctx, nil); err != nil {
@@ -409,7 +407,7 @@ func main() {
 
 	// HTTP mux: REST + SSE + NDJSON + WebSocket, protected by the same
 	// auth chain.
-	mux := runtime.NewMux(runtime.WithMuxInterceptors(chain...))
+	mux := runtime.NewMux(runtime.WithMuxUnaryInterceptors(chain...))
 	if err := usersv1.RegisterUsersServiceRoutes(mux, svc); err != nil {
 		log.Fatalf("register service: %v", err)
 	}
