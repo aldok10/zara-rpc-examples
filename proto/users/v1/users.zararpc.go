@@ -17,6 +17,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	reflect "reflect"
+	strconv "strconv"
 )
 
 // UsersServiceHandler is the server implementation contract.
@@ -75,21 +76,9 @@ func request_UsersService_GetUser_0(ctx runtime.Ctx, r *http.Request, params map
 	msg := &GetUserRequest{}
 	meta := ctx.Meta()
 
-	var err error
-
 	// Path parameters.
 	if v, ok := params["id"]; ok {
-		var tmp string
-		tmp, err = runtime.PathString(v)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "type mismatch, parameter: id, error: %v", err)
-		}
-		msg.Id = tmp
-	}
-
-	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
-		return nil, err
+		msg.Id = v
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -99,9 +88,16 @@ func request_UsersService_ListUsers_0(ctx runtime.Ctx, r *http.Request, params m
 	msg := &ListUsersRequest{}
 	meta := ctx.Meta()
 
-	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
-		return nil, err
+	// Query parameters (type-safe, no reflection).
+	if vs := meta.Query["pageSize"]; len(vs) > 0 {
+		n, err := strconv.ParseInt(vs[len(vs)-1], 10, 32)
+		if err != nil {
+			return nil, status.NewErrorf(codes.CodeInvalidArgument, "parse query parameter pageSize: %v", err)
+		}
+		msg.PageSize = int32(n)
+	}
+	if vs := meta.Query["pageToken"]; len(vs) > 0 {
+		msg.PageToken = vs[len(vs)-1]
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -123,16 +119,9 @@ func request_UsersService_UpdateUser_0(ctx runtime.Ctx, r *http.Request, params 
 	msg := &UpdateUserRequest{}
 	meta := ctx.Meta()
 
-	var err error
-
 	// Path parameters.
 	if v, ok := params["id"]; ok {
-		var tmp string
-		tmp, err = runtime.PathString(v)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "type mismatch, parameter: id, error: %v", err)
-		}
-		msg.Id = tmp
+		msg.Id = v
 	}
 
 	// Body: entire request message (buffered by the mux).
@@ -147,21 +136,9 @@ func request_UsersService_DeleteUser_0(ctx runtime.Ctx, r *http.Request, params 
 	msg := &DeleteUserRequest{}
 	meta := ctx.Meta()
 
-	var err error
-
 	// Path parameters.
 	if v, ok := params["id"]; ok {
-		var tmp string
-		tmp, err = runtime.PathString(v)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "type mismatch, parameter: id, error: %v", err)
-		}
-		msg.Id = tmp
-	}
-
-	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
-		return nil, err
+		msg.Id = v
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -183,21 +160,9 @@ func request_UsersService_Echo_1(ctx runtime.Ctx, r *http.Request, params map[st
 	msg := &EchoRequest{}
 	meta := ctx.Meta()
 
-	var err error
-
 	// Path parameters.
 	if v, ok := params["message"]; ok {
-		var tmp string
-		tmp, err = runtime.PathString(v)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "type mismatch, parameter: message, error: %v", err)
-		}
-		msg.Message = tmp
-	}
-
-	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, meta.Query, "message"); err != nil {
-		return nil, err
+		msg.Message = v
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -207,9 +172,13 @@ func request_UsersService_WatchUsers_0(ctx runtime.Ctx, r *http.Request, params 
 	msg := &WatchUsersRequest{}
 	meta := ctx.Meta()
 
-	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
-		return nil, err
+	// Query parameters (type-safe, no reflection).
+	if vs := meta.Query["intervalSeconds"]; len(vs) > 0 {
+		n, err := strconv.ParseInt(vs[len(vs)-1], 10, 32)
+		if err != nil {
+			return nil, status.NewErrorf(codes.CodeInvalidArgument, "parse query parameter intervalSeconds: %v", err)
+		}
+		msg.IntervalSeconds = int32(n)
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
