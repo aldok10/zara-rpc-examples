@@ -74,6 +74,7 @@ func (UnimplementedUsersServiceHandler) Chat(context.Context, runtime.BidiStream
 
 func request_UsersService_GetUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &GetUserRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	var err error
 
@@ -88,37 +89,40 @@ func request_UsersService_GetUser_0(ctx context.Context, r *http.Request, params
 	}
 
 	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, metadata.RequestMetaFromContext(ctx).Query, "id"); err != nil {
+	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
 		return nil, err
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_ListUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &ListUsersRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, metadata.RequestMetaFromContext(ctx).Query); err != nil {
+	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
 		return nil, err
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_CreateUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &CreateUserRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Body: entire request message (buffered by the mux).
-	if err := codec.Unmarshal(metadata.RequestMetaFromContext(ctx).Body, msg); err != nil {
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_UpdateUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &UpdateUserRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	var err error
 
@@ -133,15 +137,16 @@ func request_UsersService_UpdateUser_0(ctx context.Context, r *http.Request, par
 	}
 
 	// Body: entire request message (buffered by the mux).
-	if err := codec.Unmarshal(metadata.RequestMetaFromContext(ctx).Body, msg); err != nil {
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_DeleteUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &DeleteUserRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	var err error
 
@@ -156,26 +161,28 @@ func request_UsersService_DeleteUser_0(ctx context.Context, r *http.Request, par
 	}
 
 	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, metadata.RequestMetaFromContext(ctx).Query, "id"); err != nil {
+	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
 		return nil, err
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_Echo_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &EchoRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Body: entire request message (buffered by the mux).
-	if err := codec.Unmarshal(metadata.RequestMetaFromContext(ctx).Body, msg); err != nil {
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_Echo_1(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &EchoRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	var err error
 
@@ -190,44 +197,47 @@ func request_UsersService_Echo_1(ctx context.Context, r *http.Request, params ma
 	}
 
 	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, metadata.RequestMetaFromContext(ctx).Query, "message"); err != nil {
+	if err := runtime.PopulateQuery(msg, meta.Query, "message"); err != nil {
 		return nil, err
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_WatchUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &WatchUsersRequest{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Query parameters (reuse the query parsed by the mux).
-	if err := runtime.PopulateQuery(msg, metadata.RequestMetaFromContext(ctx).Query); err != nil {
+	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
 		return nil, err
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_UploadUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &User{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Body: entire request message (buffered by the mux).
-	if err := codec.Unmarshal(metadata.RequestMetaFromContext(ctx).Body, msg); err != nil {
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 func request_UsersService_Chat_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &ChatMessage{}
+	meta := metadata.RequestMetaFromContext(ctx)
 
 	// Body: entire request message (buffered by the mux).
-	if err := codec.Unmarshal(metadata.RequestMetaFromContext(ctx).Body, msg); err != nil {
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
-	return runtime.NewRequestWithMeta(msg, metadata.RequestMetaFromContext(ctx).Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
 // Service and endpoint constants.
