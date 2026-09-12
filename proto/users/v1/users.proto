@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package acme.users.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/aldok10/zara-rpc/examples/proto/users/v1;usersv1";
+
+// UsersService demonstrates grpc-gateway-style HTTP endpoint definitions
+// via google.api.http annotations.
+service UsersService {
+  // GET /v1/users/{id} -- path param, no body
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/users/{id}"
+    };
+  }
+
+  // GET /v1/users -- query params, no body
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/v1/users"
+    };
+  }
+
+  // POST /v1/users -- body: "*"
+  rpc CreateUser(CreateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"
+    };
+  }
+
+  // PUT /v1/users/{id} -- path param + body: "*"
+  rpc UpdateUser(UpdateUserRequest) returns (User) {
+    option (google.api.http) = {
+      put: "/v1/users/{id}"
+      body: "*"
+    };
+  }
+
+  // DELETE /v1/users/{id} -- path param, no body
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/users/{id}"
+    };
+  }
+
+  // Multiple HTTP bindings via additional_bindings.
+  rpc Echo(EchoRequest) returns (EchoResponse) {
+    option (google.api.http) = {
+      post: "/v1/echo"
+      body: "*"
+      additional_bindings {
+        get: "/v1/echo/{message}"
+      }
+    };
+  }
+
+  // Server streaming: GET /v1/users:watch -- responses streamed as SSE.
+  rpc WatchUsers(WatchUsersRequest) returns (stream User) {
+    option (google.api.http) = {
+      get: "/v1/users:watch"
+    };
+  }
+
+  // Client streaming: POST /v1/users:upload -- requests streamed as NDJSON.
+  rpc UploadUsers(stream User) returns (UploadUsersResponse) {
+    option (google.api.http) = {
+      post: "/v1/users:upload"
+      body: "*"
+    };
+  }
+
+  // Bidi streaming: POST /v1/chat -- WebSocket transport.
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage) {
+    option (google.api.http) = {
+      post: "/v1/chat"
+      body: "*"
+    };
+  }
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message ListUsersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  string next_page_token = 2;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message EchoRequest {
+  string message = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message WatchUsersRequest {
+  int32 interval_seconds = 1;
+}
+
+message UploadUsersResponse {
+  int32 count = 1;
+}
+
+message ChatMessage {
+  string user = 1;
+  string text = 2;
+}
