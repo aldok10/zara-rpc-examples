@@ -41,7 +41,7 @@ import (
 // "token" query parameter, or the "session" cookie, in that order. This
 // shows how handlers read transport payloads uniformly over HTTP and gRPC.
 func authToken(ctx context.Context) string {
-	if h := metadata.HeaderFromContext(ctx).Get("Authorization"); strings.HasPrefix(h, "Bearer ") {
+	if h := metadata.HeaderFromContext(ctx).Get(metadata.HeaderAuthorization); strings.HasPrefix(h, "Bearer ") {
 		return strings.TrimPrefix(h, "Bearer ")
 	}
 	if t := metadata.QueryFromContext(ctx).Get("token"); t != "" {
@@ -340,7 +340,7 @@ func main() {
 	// Route by content-type: gRPC requests go to the gRPC server, everything
 	// else goes to the HTTP mux. h2c lets both share one cleartext listener.
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get("Content-Type"), "application/grpc") {
+		if r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get(metadata.HeaderContentType), metadata.ContentTypeGRPC) {
 			grpcServer.ServeHTTP(w, r)
 			return
 		}

@@ -21,6 +21,7 @@ import (
 	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/client"
 	"github.com/aldok10/zara-rpc/encoding"
+	"github.com/aldok10/zara-rpc/metadata"
 )
 
 func main() {
@@ -76,7 +77,7 @@ func runUnary(ctx context.Context, c usersv1.UsersServiceHTTPClient) {
 
 	// Get it back — requires auth (JWT-style via header).
 	got, err := c.GetUser(ctx, &usersv1.GetUserRequest{Id: created.Id},
-		client.WithHeader("Authorization", "Bearer secret-token-123"),
+		client.WithHeader(metadata.HeaderAuthorization, "Bearer secret-token-123"),
 		client.WithHeader("x-trace", "demo"),
 	)
 	if err != nil {

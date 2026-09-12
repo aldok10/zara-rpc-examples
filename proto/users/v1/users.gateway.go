@@ -8,56 +8,14 @@ package usersv1
 
 import (
 	context "context"
-	codes "github.com/aldok10/zara-rpc/codes"
 	metadata "github.com/aldok10/zara-rpc/metadata"
 	runtime "github.com/aldok10/zara-rpc/runtime"
 	status "github.com/aldok10/zara-rpc/status"
 	grpc "google.golang.org/grpc"
 	metadata1 "google.golang.org/grpc/metadata"
-	status1 "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	io "io"
-	strings "strings"
 )
-
-// forwardHeaders copies zararpc request headers into outgoing gRPC
-// metadata so auth data (e.g. Authorization) survives the gateway hop.
-// Hop-by-hop headers are skipped.
-func forwardHeaders(ctx context.Context) context.Context {
-	h := metadata.HeaderFromContext(ctx)
-	if len(h) == 0 {
-		return ctx
-	}
-	pairs := make([]string, 0, len(h)*2)
-	for k, vs := range h {
-		switch strings.ToLower(k) {
-		case "content-type", "content-length", "connection", "upgrade", "accept", "accept-encoding", "user-agent", "host":
-			continue
-		}
-		for _, v := range vs {
-			pairs = append(pairs, k, v)
-		}
-	}
-	if len(pairs) == 0 {
-		return ctx
-	}
-	return metadata1.AppendToOutgoingContext(ctx, pairs...)
-}
-
-// toZaraError converts a grpc status error to a zararpc error so
-// error codes and HTTP status codes survive the gateway hop.
-// zararpc codes are numerically identical to grpc codes, so the
-// conversion is a direct cast.
-func toZaraError(err error) error {
-	if err == nil {
-		return nil
-	}
-	st, ok := status1.FromError(err)
-	if !ok {
-		return err
-	}
-	return status.NewErrorf(codes.Code(st.Code()), "%s", st.Message())
-}
 
 // gatewayUsersService adapts the grpc-go client to the zararpc HTTP handler
 // contract. It is used by RegisterUsersServiceGateway.
@@ -67,64 +25,78 @@ type gatewayUsersService struct {
 }
 
 func (g *gatewayUsersService) GetUser(ctx context.Context, req *GetUserRequest) (*User, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.GetUser(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) ListUsers(ctx context.Context, req *ListUsersRequest) (*ListUsersResponse, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.ListUsers(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) CreateUser(ctx context.Context, req *CreateUserRequest) (*User, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.CreateUser(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*User, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.UpdateUser(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) DeleteUser(ctx context.Context, req *DeleteUserRequest) (*emptypb.Empty, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.DeleteUser(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) Echo(ctx context.Context, req *EchoRequest) (*EchoResponse, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	resp, err := g.client.Echo(ctx, req)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) WatchUsers(ctx context.Context, req *WatchUsersRequest, stream runtime.ServerStream[*User]) error {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	clientStream, err := g.client.WatchUsers(ctx, req)
 	if err != nil {
-		return toZaraError(err)
+		return status.FromGRPCStatus(err)
 	}
 	for {
 		msg, err := clientStream.Recv()
@@ -132,7 +104,7 @@ func (g *gatewayUsersService) WatchUsers(ctx context.Context, req *WatchUsersReq
 			return nil
 		}
 		if err != nil {
-			return toZaraError(err)
+			return status.FromGRPCStatus(err)
 		}
 		if err := stream.Send(msg); err != nil {
 			return err
@@ -141,10 +113,12 @@ func (g *gatewayUsersService) WatchUsers(ctx context.Context, req *WatchUsersReq
 }
 
 func (g *gatewayUsersService) UploadUsers(ctx context.Context, stream runtime.ClientStream[*User]) (*UploadUsersResponse, error) {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	clientStream, err := g.client.UploadUsers(ctx)
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	for {
 		msg, err := stream.Receive()
@@ -155,21 +129,23 @@ func (g *gatewayUsersService) UploadUsers(ctx context.Context, stream runtime.Cl
 			return nil, err
 		}
 		if err := clientStream.Send(msg); err != nil {
-			return nil, toZaraError(err)
+			return nil, status.FromGRPCStatus(err)
 		}
 	}
 	resp, err := clientStream.CloseAndRecv()
 	if err != nil {
-		return nil, toZaraError(err)
+		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
 func (g *gatewayUsersService) Chat(ctx context.Context, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
-	ctx = forwardHeaders(ctx)
+	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
+		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+	}
 	clientStream, err := g.client.Chat(ctx)
 	if err != nil {
-		return toZaraError(err)
+		return status.FromGRPCStatus(err)
 	}
 	errCh := make(chan error, 2)
 	go func() {
@@ -185,7 +161,7 @@ func (g *gatewayUsersService) Chat(ctx context.Context, stream runtime.BidiStrea
 				return
 			}
 			if err := clientStream.Send(msg); err != nil {
-				errCh <- toZaraError(err)
+				errCh <- status.FromGRPCStatus(err)
 				return
 			}
 		}
@@ -198,7 +174,7 @@ func (g *gatewayUsersService) Chat(ctx context.Context, stream runtime.BidiStrea
 				return
 			}
 			if err != nil {
-				errCh <- toZaraError(err)
+				errCh <- status.FromGRPCStatus(err)
 				return
 			}
 			if err := stream.Send(msg); err != nil {
