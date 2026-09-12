@@ -32,6 +32,7 @@ import (
 
 	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/codes"
+	"github.com/aldok10/zara-rpc/encoding"
 	"github.com/aldok10/zara-rpc/metadata"
 	"github.com/aldok10/zara-rpc/runtime"
 	"github.com/aldok10/zara-rpc/status"
@@ -40,30 +41,32 @@ import (
 // authToken extracts a bearer token from the Authorization header, the
 // "token" query parameter, or the "session" cookie, in that order. This
 // shows how handlers read transport payloads uniformly over HTTP and gRPC.
-func authToken(ctx context.Context) string {
-	if h := metadata.HeaderFromContext(ctx).Get(metadata.HeaderAuthorization); strings.HasPrefix(h, "Bearer ") {
+func authToken(ctx runtime.Ctx) string {
+	if h := ctx.Header().Get(metadata.HeaderAuthorization); strings.HasPrefix(h, "Bearer ") {
 		return strings.TrimPrefix(h, "Bearer ")
 	}
-	if t := metadata.QueryFromContext(ctx).Get("token"); t != "" {
+	if t := ctx.Query().Get("token"); t != "" {
 		return t
 	}
-	if c, err := metadata.CookieFromContext(ctx, "session"); err == nil {
+	if c, err := ctx.Cookie("session"); err == nil {
 		return c.Value
 	}
 	return ""
 }
 
 // requireAuth rejects requests without a valid token.
-func requireAuth(ctx context.Context) error {
+func requireAuth(ctx runtime.Ctx) error {
 	if authToken(ctx) != "secret-token-123" {
 		return status.NewErrorf(codes.CodeUnauthenticated, "missing or invalid auth token")
 	}
 	return nil
 }
 
-// withGRPCMeta converts incoming gRPC metadata into RequestMeta so
-// handlers see the same header API over both transports.
-func withGRPCMeta(ctx context.Context) context.Context {
+// grpcCtx converts incoming gRPC metadata into a runtime.Ctx so handlers
+// see the same header API over both transports. The protobuf codec and the
+// "grpc" protocol mark the request so ctx.IsGRPC()/ctx.IsJsonCodec()
+// distinguish the transports.
+func grpcCtx(ctx context.Context) runtime.Ctx {
 	md, _ := grpcmetadata.FromIncomingContext(ctx)
 	header := make(http.Header)
 	for k, vs := range md {
@@ -71,7 +74,7 @@ func withGRPCMeta(ctx context.Context) context.Context {
 			header.Add(k, v)
 		}
 	}
-	return metadata.WithRequestMeta(ctx, metadata.RequestMeta{Header: header})
+	return runtime.NewCtx(ctx, metadata.RequestMeta{Header: header}, encoding.ProtoCodec{}).WithProtocol("grpc")
 }
 
 // usersService implements usersv1.UsersServiceHandler (the zararpc HTTP
@@ -83,7 +86,19 @@ type usersService struct {
 	next  int64
 }
 
-func (s *usersService) GetUser(ctx context.Context, req *usersv1.GetUserRequest) (*usersv1.User, error) {
+func (s *usersService) GetUser(ctx runtime.Ctx, req *usersv1.GetUserRequest) (*usersv1.User, error) {
+	// Protocol detection: HTTP/JSON requests negotiate the JSON codec;
+	// gRPC requests negotiate the protobuf codec. Handlers can branch on
+	// the transport without knowing where the request came from.
+	if ctx.IsJsonCodec() {
+		log.Printf("GetUser: JSON over %s", ctx.Protocol())
+	} else if ctx.IsGRPC() {
+		log.Printf("GetUser: gRPC (protobuf)")
+	}
+	// Generic payload access: the same message the handler received.
+	if typed := ctx.Request[usersv1.GetUserRequest](); typed != nil && typed.Id != req.Id {
+		return nil, status.NewErrorf(codes.CodeInternal, "ctx payload mismatch")
+	}
 	// Auth: reads the token from header, query param, or cookie — same
 	// code path regardless of whether the request came via HTTP or gRPC.
 	if err := requireAuth(ctx); err != nil {
@@ -98,7 +113,7 @@ func (s *usersService) GetUser(ctx context.Context, req *usersv1.GetUserRequest)
 	return u, nil
 }
 
-func (s *usersService) ListUsers(ctx context.Context, req *usersv1.ListUsersRequest) (*usersv1.ListUsersResponse, error) {
+func (s *usersService) ListUsers(ctx runtime.Ctx, req *usersv1.ListUsersRequest) (*usersv1.ListUsersResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	resp := &usersv1.ListUsersResponse{}
@@ -108,10 +123,10 @@ func (s *usersService) ListUsers(ctx context.Context, req *usersv1.ListUsersRequ
 	return resp, nil
 }
 
-func (s *usersService) CreateUser(ctx context.Context, req *usersv1.CreateUserRequest) (*usersv1.User, error) {
+func (s *usersService) CreateUser(ctx runtime.Ctx, req *usersv1.CreateUserRequest) (*usersv1.User, error) {
 	// Demo: read the raw body and a cookie from the transport payload.
-	body := metadata.BodyFromContext(ctx)
-	if c, err := metadata.CookieFromContext(ctx, "session"); err == nil {
+	body := ctx.Body()
+	if c, err := ctx.Cookie("session"); err == nil {
 		log.Printf("CreateUser: session cookie=%q body=%d bytes", c.Value, len(body))
 	}
 	s.mu.Lock()
@@ -122,7 +137,7 @@ func (s *usersService) CreateUser(ctx context.Context, req *usersv1.CreateUserRe
 	return u, nil
 }
 
-func (s *usersService) UpdateUser(ctx context.Context, req *usersv1.UpdateUserRequest) (*usersv1.User, error) {
+func (s *usersService) UpdateUser(ctx runtime.Ctx, req *usersv1.UpdateUserRequest) (*usersv1.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	u, ok := s.users[req.Id]
@@ -138,19 +153,19 @@ func (s *usersService) UpdateUser(ctx context.Context, req *usersv1.UpdateUserRe
 	return u, nil
 }
 
-func (s *usersService) DeleteUser(ctx context.Context, req *usersv1.DeleteUserRequest) (*emptypb.Empty, error) {
+func (s *usersService) DeleteUser(ctx runtime.Ctx, req *usersv1.DeleteUserRequest) (*emptypb.Empty, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.users, req.Id)
 	return &emptypb.Empty{}, nil
 }
 
-func (s *usersService) Echo(ctx context.Context, req *usersv1.EchoRequest) (*usersv1.EchoResponse, error) {
+func (s *usersService) Echo(ctx runtime.Ctx, req *usersv1.EchoRequest) (*usersv1.EchoResponse, error) {
 	return &usersv1.EchoResponse{Message: req.Message}, nil
 }
 
 // WatchUsers streams all users every interval_seconds (SSE transport).
-func (s *usersService) WatchUsers(ctx context.Context, req *usersv1.WatchUsersRequest, stream runtime.ServerStream[*usersv1.User]) error {
+func (s *usersService) WatchUsers(ctx runtime.Ctx, req *usersv1.WatchUsersRequest, stream runtime.ServerStream[*usersv1.User]) error {
 	interval := time.Duration(req.IntervalSeconds) * time.Second
 	if interval <= 0 {
 		interval = time.Second
@@ -175,7 +190,7 @@ func (s *usersService) WatchUsers(ctx context.Context, req *usersv1.WatchUsersRe
 }
 
 // UploadUsers reads a stream of users and stores them (NDJSON transport).
-func (s *usersService) UploadUsers(ctx context.Context, stream runtime.ClientStream[*usersv1.User]) (*usersv1.UploadUsersResponse, error) {
+func (s *usersService) UploadUsers(ctx runtime.Ctx, stream runtime.ClientStream[*usersv1.User]) (*usersv1.UploadUsersResponse, error) {
 	var count int32
 	for {
 		u, err := stream.Receive()
@@ -196,7 +211,7 @@ func (s *usersService) UploadUsers(ctx context.Context, stream runtime.ClientStr
 }
 
 // Chat echoes messages back (WebSocket transport).
-func (s *usersService) Chat(ctx context.Context, stream runtime.BidiStream[*usersv1.ChatMessage, *usersv1.ChatMessage]) error {
+func (s *usersService) Chat(ctx runtime.Ctx, stream runtime.BidiStream[*usersv1.ChatMessage, *usersv1.ChatMessage]) error {
 	for {
 		msg, err := stream.Receive()
 		if err == io.EOF {
@@ -222,35 +237,35 @@ type grpcUsersService struct {
 }
 
 func (g *grpcUsersService) GetUser(ctx context.Context, req *usersv1.GetUserRequest) (*usersv1.User, error) {
-	return g.usersService.GetUser(withGRPCMeta(ctx), req)
+	return g.usersService.GetUser(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) ListUsers(ctx context.Context, req *usersv1.ListUsersRequest) (*usersv1.ListUsersResponse, error) {
-	return g.usersService.ListUsers(withGRPCMeta(ctx), req)
+	return g.usersService.ListUsers(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) CreateUser(ctx context.Context, req *usersv1.CreateUserRequest) (*usersv1.User, error) {
-	return g.usersService.CreateUser(withGRPCMeta(ctx), req)
+	return g.usersService.CreateUser(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) UpdateUser(ctx context.Context, req *usersv1.UpdateUserRequest) (*usersv1.User, error) {
-	return g.usersService.UpdateUser(withGRPCMeta(ctx), req)
+	return g.usersService.UpdateUser(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) DeleteUser(ctx context.Context, req *usersv1.DeleteUserRequest) (*emptypb.Empty, error) {
-	return g.usersService.DeleteUser(withGRPCMeta(ctx), req)
+	return g.usersService.DeleteUser(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) Echo(ctx context.Context, req *usersv1.EchoRequest) (*usersv1.EchoResponse, error) {
-	return g.usersService.Echo(withGRPCMeta(ctx), req)
+	return g.usersService.Echo(grpcCtx(ctx), req)
 }
 
 func (g *grpcUsersService) WatchUsers(req *usersv1.WatchUsersRequest, stream grpc.ServerStreamingServer[usersv1.User]) error {
-	return g.usersService.WatchUsers(stream.Context(), req, &grpcServerStreamAdapter{stream})
+	return g.usersService.WatchUsers(grpcCtx(stream.Context()), req, &grpcServerStreamAdapter{stream})
 }
 
 func (g *grpcUsersService) UploadUsers(stream grpc.ClientStreamingServer[usersv1.User, usersv1.UploadUsersResponse]) error {
-	resp, err := g.usersService.UploadUsers(stream.Context(), &grpcClientStreamAdapter{stream})
+	resp, err := g.usersService.UploadUsers(grpcCtx(stream.Context()), &grpcClientStreamAdapter{stream})
 	if err != nil {
 		return err
 	}
@@ -258,7 +273,7 @@ func (g *grpcUsersService) UploadUsers(stream grpc.ClientStreamingServer[usersv1
 }
 
 func (g *grpcUsersService) Chat(stream grpc.BidiStreamingServer[usersv1.ChatMessage, usersv1.ChatMessage]) error {
-	return g.usersService.Chat(stream.Context(), &grpcBidiStreamAdapter{stream})
+	return g.usersService.Chat(grpcCtx(stream.Context()), &grpcBidiStreamAdapter{stream})
 }
 
 // grpcServerStreamAdapter adapts grpc.ServerStreamingServer to

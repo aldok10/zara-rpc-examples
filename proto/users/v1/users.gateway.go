@@ -7,7 +7,6 @@
 package usersv1
 
 import (
-	context "context"
 	metadata "github.com/aldok10/zara-rpc/metadata"
 	runtime "github.com/aldok10/zara-rpc/runtime"
 	status "github.com/aldok10/zara-rpc/status"
@@ -24,77 +23,84 @@ type gatewayUsersService struct {
 	client UsersServiceClient
 }
 
-func (g *gatewayUsersService) GetUser(ctx context.Context, req *GetUserRequest) (*User, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) GetUser(ctx runtime.Ctx, req *GetUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.GetUser(ctx, req)
+	resp, err := g.client.GetUser(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) ListUsers(ctx context.Context, req *ListUsersRequest) (*ListUsersResponse, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) ListUsers(ctx runtime.Ctx, req *ListUsersRequest) (*ListUsersResponse, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.ListUsers(ctx, req)
+	resp, err := g.client.ListUsers(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) CreateUser(ctx context.Context, req *CreateUserRequest) (*User, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) CreateUser(ctx runtime.Ctx, req *CreateUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.CreateUser(ctx, req)
+	resp, err := g.client.CreateUser(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) UpdateUser(ctx context.Context, req *UpdateUserRequest) (*User, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) UpdateUser(ctx runtime.Ctx, req *UpdateUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.UpdateUser(ctx, req)
+	resp, err := g.client.UpdateUser(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) DeleteUser(ctx context.Context, req *DeleteUserRequest) (*emptypb.Empty, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) DeleteUser(ctx runtime.Ctx, req *DeleteUserRequest) (*emptypb.Empty, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.DeleteUser(ctx, req)
+	resp, err := g.client.DeleteUser(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) Echo(ctx context.Context, req *EchoRequest) (*EchoResponse, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) Echo(ctx runtime.Ctx, req *EchoRequest) (*EchoResponse, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	resp, err := g.client.Echo(ctx, req)
+	resp, err := g.client.Echo(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
 	return resp, nil
 }
 
-func (g *gatewayUsersService) WatchUsers(ctx context.Context, req *WatchUsersRequest, stream runtime.ServerStream[*User]) error {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) WatchUsers(ctx runtime.Ctx, req *WatchUsersRequest, stream runtime.ServerStream[*User]) error {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	clientStream, err := g.client.WatchUsers(ctx, req)
+	clientStream, err := g.client.WatchUsers(gctx, req)
 	if err != nil {
 		return status.FromGRPCStatus(err)
 	}
@@ -112,11 +118,12 @@ func (g *gatewayUsersService) WatchUsers(ctx context.Context, req *WatchUsersReq
 	}
 }
 
-func (g *gatewayUsersService) UploadUsers(ctx context.Context, stream runtime.ClientStream[*User]) (*UploadUsersResponse, error) {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) UploadUsers(ctx runtime.Ctx, stream runtime.ClientStream[*User]) (*UploadUsersResponse, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	clientStream, err := g.client.UploadUsers(ctx)
+	clientStream, err := g.client.UploadUsers(gctx)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
@@ -139,11 +146,12 @@ func (g *gatewayUsersService) UploadUsers(ctx context.Context, stream runtime.Cl
 	return resp, nil
 }
 
-func (g *gatewayUsersService) Chat(ctx context.Context, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
-	if pairs := metadata.HeaderPairs(ctx); len(pairs) > 0 {
-		ctx = metadata1.AppendToOutgoingContext(ctx, pairs...)
+func (g *gatewayUsersService) Chat(ctx runtime.Ctx, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
-	clientStream, err := g.client.Chat(ctx)
+	clientStream, err := g.client.Chat(gctx)
 	if err != nil {
 		return status.FromGRPCStatus(err)
 	}

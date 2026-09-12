@@ -11,7 +11,6 @@ import (
 	client "github.com/aldok10/zara-rpc/client"
 	codes "github.com/aldok10/zara-rpc/codes"
 	encoding "github.com/aldok10/zara-rpc/encoding"
-	metadata "github.com/aldok10/zara-rpc/metadata"
 	peer "github.com/aldok10/zara-rpc/peer"
 	runtime "github.com/aldok10/zara-rpc/runtime"
 	status "github.com/aldok10/zara-rpc/status"
@@ -22,59 +21,59 @@ import (
 
 // UsersServiceHandler is the server implementation contract.
 type UsersServiceHandler interface {
-	GetUser(context.Context, *GetUserRequest) (*User, error)
-	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
-	CreateUser(context.Context, *CreateUserRequest) (*User, error)
-	UpdateUser(context.Context, *UpdateUserRequest) (*User, error)
-	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
-	Echo(context.Context, *EchoRequest) (*EchoResponse, error)
-	WatchUsers(context.Context, *WatchUsersRequest, runtime.ServerStream[*User]) error
-	UploadUsers(context.Context, runtime.ClientStream[*User]) (*UploadUsersResponse, error)
-	Chat(context.Context, runtime.BidiStream[*ChatMessage, *ChatMessage]) error
+	GetUser(runtime.Ctx, *GetUserRequest) (*User, error)
+	ListUsers(runtime.Ctx, *ListUsersRequest) (*ListUsersResponse, error)
+	CreateUser(runtime.Ctx, *CreateUserRequest) (*User, error)
+	UpdateUser(runtime.Ctx, *UpdateUserRequest) (*User, error)
+	DeleteUser(runtime.Ctx, *DeleteUserRequest) (*emptypb.Empty, error)
+	Echo(runtime.Ctx, *EchoRequest) (*EchoResponse, error)
+	WatchUsers(runtime.Ctx, *WatchUsersRequest, runtime.ServerStream[*User]) error
+	UploadUsers(runtime.Ctx, runtime.ClientStream[*User]) (*UploadUsersResponse, error)
+	Chat(runtime.Ctx, runtime.BidiStream[*ChatMessage, *ChatMessage]) error
 }
 
 // UnimplementedUsersServiceHandler returns CodeUnimplemented for every method.
 type UnimplementedUsersServiceHandler struct{}
 
-func (UnimplementedUsersServiceHandler) GetUser(context.Context, *GetUserRequest) (*User, error) {
+func (UnimplementedUsersServiceHandler) GetUser(runtime.Ctx, *GetUserRequest) (*User, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method GetUser not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error) {
+func (UnimplementedUsersServiceHandler) ListUsers(runtime.Ctx, *ListUsersRequest) (*ListUsersResponse, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method ListUsers not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) CreateUser(context.Context, *CreateUserRequest) (*User, error) {
+func (UnimplementedUsersServiceHandler) CreateUser(runtime.Ctx, *CreateUserRequest) (*User, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method CreateUser not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) UpdateUser(context.Context, *UpdateUserRequest) (*User, error) {
+func (UnimplementedUsersServiceHandler) UpdateUser(runtime.Ctx, *UpdateUserRequest) (*User, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method UpdateUser not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
+func (UnimplementedUsersServiceHandler) DeleteUser(runtime.Ctx, *DeleteUserRequest) (*emptypb.Empty, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method DeleteUser not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) Echo(context.Context, *EchoRequest) (*EchoResponse, error) {
+func (UnimplementedUsersServiceHandler) Echo(runtime.Ctx, *EchoRequest) (*EchoResponse, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method Echo not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) WatchUsers(context.Context, *WatchUsersRequest, runtime.ServerStream[*User]) error {
+func (UnimplementedUsersServiceHandler) WatchUsers(runtime.Ctx, *WatchUsersRequest, runtime.ServerStream[*User]) error {
 	return status.NewErrorf(codes.CodeUnimplemented, "method WatchUsers not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) UploadUsers(context.Context, runtime.ClientStream[*User]) (*UploadUsersResponse, error) {
+func (UnimplementedUsersServiceHandler) UploadUsers(runtime.Ctx, runtime.ClientStream[*User]) (*UploadUsersResponse, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method UploadUsers not implemented")
 }
 
-func (UnimplementedUsersServiceHandler) Chat(context.Context, runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
+func (UnimplementedUsersServiceHandler) Chat(runtime.Ctx, runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
 	return status.NewErrorf(codes.CodeUnimplemented, "method Chat not implemented")
 }
 
-func request_UsersService_GetUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_GetUser_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &GetUserRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	var err error
 
@@ -96,9 +95,9 @@ func request_UsersService_GetUser_0(ctx context.Context, r *http.Request, params
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_ListUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_ListUsers_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &ListUsersRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Query parameters (reuse the query parsed by the mux).
 	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
@@ -108,9 +107,9 @@ func request_UsersService_ListUsers_0(ctx context.Context, r *http.Request, para
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_CreateUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_CreateUser_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &CreateUserRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Body: entire request message (buffered by the mux).
 	if err := codec.Unmarshal(meta.Body, msg); err != nil {
@@ -120,9 +119,9 @@ func request_UsersService_CreateUser_0(ctx context.Context, r *http.Request, par
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_UpdateUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_UpdateUser_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &UpdateUserRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	var err error
 
@@ -144,9 +143,9 @@ func request_UsersService_UpdateUser_0(ctx context.Context, r *http.Request, par
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_DeleteUser_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_DeleteUser_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &DeleteUserRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	var err error
 
@@ -168,9 +167,9 @@ func request_UsersService_DeleteUser_0(ctx context.Context, r *http.Request, par
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_Echo_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_Echo_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &EchoRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Body: entire request message (buffered by the mux).
 	if err := codec.Unmarshal(meta.Body, msg); err != nil {
@@ -180,9 +179,9 @@ func request_UsersService_Echo_0(ctx context.Context, r *http.Request, params ma
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_Echo_1(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_Echo_1(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &EchoRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	var err error
 
@@ -204,9 +203,9 @@ func request_UsersService_Echo_1(ctx context.Context, r *http.Request, params ma
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_WatchUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_WatchUsers_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &WatchUsersRequest{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Query parameters (reuse the query parsed by the mux).
 	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
@@ -216,9 +215,9 @@ func request_UsersService_WatchUsers_0(ctx context.Context, r *http.Request, par
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_UploadUsers_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_UploadUsers_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &User{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Body: entire request message (buffered by the mux).
 	if err := codec.Unmarshal(meta.Body, msg); err != nil {
@@ -228,9 +227,9 @@ func request_UsersService_UploadUsers_0(ctx context.Context, r *http.Request, pa
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
-func request_UsersService_Chat_0(ctx context.Context, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+func request_UsersService_Chat_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &ChatMessage{}
-	meta := metadata.RequestMetaFromContext(ctx)
+	meta := ctx.Meta()
 
 	// Body: entire request message (buffered by the mux).
 	if err := codec.Unmarshal(meta.Body, msg); err != nil {
@@ -269,7 +268,7 @@ func Register_GetUser(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodGet,
 		UsersService_GetUser_Path,
-		func(ctx context.Context, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.GetUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -286,7 +285,7 @@ func Register_ListUsers(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodGet,
 		UsersService_ListUsers_Path,
-		func(ctx context.Context, req *runtime.Request[ListUsersRequest]) (*runtime.Response[ListUsersResponse], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[ListUsersRequest]) (*runtime.Response[ListUsersResponse], error) {
 			resp, err := svc.ListUsers(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -303,7 +302,7 @@ func Register_CreateUser(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodPost,
 		UsersService_CreateUser_Path,
-		func(ctx context.Context, req *runtime.Request[CreateUserRequest]) (*runtime.Response[User], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[CreateUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.CreateUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -321,7 +320,7 @@ func Register_UpdateUser(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodPut,
 		UsersService_UpdateUser_Path,
-		func(ctx context.Context, req *runtime.Request[UpdateUserRequest]) (*runtime.Response[User], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[UpdateUserRequest]) (*runtime.Response[User], error) {
 			resp, err := svc.UpdateUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -339,7 +338,7 @@ func Register_DeleteUser(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodDelete,
 		UsersService_DeleteUser_Path,
-		func(ctx context.Context, req *runtime.Request[DeleteUserRequest]) (*runtime.Response[emptypb.Empty], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[DeleteUserRequest]) (*runtime.Response[emptypb.Empty], error) {
 			resp, err := svc.DeleteUser(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -356,7 +355,7 @@ func Register_Echo(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodPost,
 		UsersService_Echo_Path,
-		func(ctx context.Context, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
 			resp, err := svc.Echo(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -374,7 +373,7 @@ func Register_Echo_1(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewEndpoint(
 		http.MethodGet,
 		UsersService_Echo_Path_1,
-		func(ctx context.Context, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
+		func(ctx runtime.Ctx, req *runtime.Request[EchoRequest]) (*runtime.Response[EchoResponse], error) {
 			resp, err := svc.Echo(ctx, req.Msg())
 			if err != nil {
 				return nil, err
@@ -391,7 +390,7 @@ func Register_WatchUsers(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewServerStreamEndpoint(
 		http.MethodGet,
 		UsersService_WatchUsers_Path,
-		func(ctx context.Context, req *runtime.Request[WatchUsersRequest], stream runtime.ServerStream[*User]) error {
+		func(ctx runtime.Ctx, req *runtime.Request[WatchUsersRequest], stream runtime.ServerStream[*User]) error {
 			return svc.WatchUsers(ctx, req.Msg(), stream)
 		},
 		runtime.WithRPC(UsersService_WatchUsers_Method),
@@ -405,7 +404,7 @@ func Register_UploadUsers(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewClientStreamEndpoint(
 		http.MethodPost,
 		UsersService_UploadUsers_Path,
-		func(ctx context.Context, stream runtime.ClientStream[*User]) (*runtime.Response[UploadUsersResponse], error) {
+		func(ctx runtime.Ctx, stream runtime.ClientStream[*User]) (*runtime.Response[UploadUsersResponse], error) {
 			resp, err := svc.UploadUsers(ctx, stream)
 			if err != nil {
 				return nil, err
@@ -422,7 +421,7 @@ func Register_Chat(svc UsersServiceHandler) *runtime.Endpoint {
 	return runtime.NewBidiStreamEndpoint(
 		http.MethodPost,
 		UsersService_Chat_Path,
-		func(ctx context.Context, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
+		func(ctx runtime.Ctx, stream runtime.BidiStream[*ChatMessage, *ChatMessage]) error {
 			return svc.Chat(ctx, stream)
 		},
 		runtime.WithRPC(UsersService_Chat_Method),
