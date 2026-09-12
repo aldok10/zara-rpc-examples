@@ -24,49 +24,55 @@ const (
 var file_zara_options_proto_extTypes = []protoimpl.ExtensionInfo{
 	{
 		ExtendedType:  (*descriptorpb.FieldOptions)(nil),
-		ExtensionType: ([]string)(nil),
+		ExtensionType: (*string)(nil),
 		Field:         50001,
-		Name:          "zara.options.custom_tag_key",
-		Tag:           "bytes,50001,rep,name=custom_tag_key",
+		Name:          "zara.options.tags",
+		Tag:           "bytes,50001,opt,name=tags",
 		Filename:      "zara/options.proto",
 	},
 	{
-		ExtendedType:  (*descriptorpb.FieldOptions)(nil),
-		ExtensionType: ([]string)(nil),
+		ExtendedType:  (*descriptorpb.OneofOptions)(nil),
+		ExtensionType: (*string)(nil),
 		Field:         50002,
-		Name:          "zara.options.custom_tag_value",
-		Tag:           "bytes,50002,rep,name=custom_tag_value",
+		Name:          "zara.options.oneof_tags",
+		Tag:           "bytes,50002,opt,name=oneof_tags",
 		Filename:      "zara/options.proto",
 	},
 }
 
 // Extension fields to descriptorpb.FieldOptions.
 var (
-	// The struct tag key, e.g. "xml", "gorm", "mapstructure".
+	// The full struct tag literal for the field, e.g.
+	// `xml:"flag,attr" gorm:"primaryKey"`.
 	//
-	// repeated string custom_tag_key = 50001;
-	E_CustomTagKey = &file_zara_options_proto_extTypes[0]
-	// The struct tag value, e.g. "flag,attr", "primaryKey". Paired with
-	// custom_tag_key by index.
+	// optional string tags = 50001;
+	E_Tags = &file_zara_options_proto_extTypes[0]
+)
+
+// Extension fields to descriptorpb.OneofOptions.
+var (
+	// The full struct tag literal for the oneof field.
 	//
-	// repeated string custom_tag_value = 50002;
-	E_CustomTagValue = &file_zara_options_proto_extTypes[1]
+	// optional string oneof_tags = 50002;
+	E_OneofTags = &file_zara_options_proto_extTypes[1]
 )
 
 var File_zara_options_proto protoreflect.FileDescriptor
 
 const file_zara_options_proto_rawDesc = "" +
 	"\n" +
-	"\x12zara/options.proto\x12\fzara.options\x1a google/protobuf/descriptor.proto:E\n" +
-	"\x0ecustom_tag_key\x12\x1d.google.protobuf.FieldOptions\x18ц\x03 \x03(\tR\fcustomTagKey:I\n" +
-	"\x10custom_tag_value\x12\x1d.google.protobuf.FieldOptions\x18҆\x03 \x03(\tR\x0ecustomTagValueB6Z4github.com/aldok10/zara-rpc-examples/proto/zara;zarab\x06proto3"
+	"\x12zara/options.proto\x12\fzara.options\x1a google/protobuf/descriptor.proto:3\n" +
+	"\x04tags\x12\x1d.google.protobuf.FieldOptions\x18ц\x03 \x01(\tR\x04tags:>\n" +
+	"\n" +
+	"oneof_tags\x12\x1d.google.protobuf.OneofOptions\x18҆\x03 \x01(\tR\toneofTagsB6Z4github.com/aldok10/zara-rpc-examples/proto/zara;zarab\x06proto3"
 
 var file_zara_options_proto_goTypes = []any{
 	(*descriptorpb.FieldOptions)(nil), // 0: google.protobuf.FieldOptions
+	(*descriptorpb.OneofOptions)(nil), // 1: google.protobuf.OneofOptions
 }
 var file_zara_options_proto_depIdxs = []int32{
-	0, // 0: zara.options.custom_tag_key:extendee -> google.protobuf.FieldOptions
-	0, // 1: zara.options.custom_tag_value:extendee -> google.protobuf.FieldOptions
+	0, // 0: zara.options.tags:extendee -> google.protobuf.FieldOptions
+	1, // 1: zara.options.oneof_tags:extendee -> google.protobuf.OneofOptions
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

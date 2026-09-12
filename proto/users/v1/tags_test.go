@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-// TestStructNamedCustomTags proves the (custom_tag_key)/(custom_tag_value)
-// field options landed on the generated struct after zararpc-tags applied
-// the overlay to users.pb.go.
+// TestStructNamedCustomTags proves the (zara.options.tags) field option
+// landed on the generated struct after zararpc-tags applied the overlay to
+// users.pb.go.
 func TestStructNamedCustomTags(t *testing.T) {
 	typ := reflect.TypeOf(StructNamed{})
 
@@ -29,6 +29,20 @@ func TestStructNamedCustomTags(t *testing.T) {
 	}
 	if got := name.Tag.Get("mapstructure"); got != "name" {
 		t.Errorf("mapstructure tag = %q, want name", got)
+	}
+}
+
+// TestStructOneofCustomTags proves the (zara.options.oneof_tags) oneof
+// option landed on the oneof field of the message struct.
+func TestStructOneofCustomTags(t *testing.T) {
+	typ := reflect.TypeOf(StructOneof{})
+
+	payload, ok := typ.FieldByName("Payload")
+	if !ok {
+		t.Fatal("Payload field not found")
+	}
+	if got := payload.Tag.Get("xml"); got != "payload,attr" {
+		t.Errorf("xml tag = %q, want payload,attr", got)
 	}
 }
 

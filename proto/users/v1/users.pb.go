@@ -617,13 +617,13 @@ func (x *ChatMessage) GetText() string {
 }
 
 // StructNamed demonstrates custom struct tags on generated Go structs via
-// the (custom_tag_key)/(custom_tag_value) field options. protoc-gen-zararpc
-// emits the tags as users.tags.go; zararpc-tags applies them to the
-// generated users.pb.go struct so reflection-based libraries
-// (encoding/xml, gorm, mapstructure, ...) see them.
+// the (zara.options.tags) field option. protoc-gen-zararpc emits the tags
+// as users.tags.go; zararpc-tags applies them to the generated users.pb.go
+// struct so reflection-based libraries (encoding/xml, gorm, mapstructure,
+// ...) see them.
 type StructNamed struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Flag          bool                   `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty" xml:"flag,attr" gorm:"primaryKey"`
+	Flag          bool                   `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty" gorm:"primaryKey" xml:"flag,attr"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" mapstructure:"name"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -673,6 +673,91 @@ func (x *StructNamed) GetName() string {
 	return ""
 }
 
+// StructOneof demonstrates custom struct tags on oneofs via the
+// (zara.options.oneof_tags) oneof option. The tags land on the oneof field
+// (Payload) of the StructOneof message struct.
+type StructOneof struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*StructOneof_Text
+	//	*StructOneof_Count
+	Payload       isStructOneof_Payload `protobuf_oneof:"payload" xml:"payload,attr"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StructOneof) Reset() {
+	*x = StructOneof{}
+	mi := &file_users_v1_users_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StructOneof) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StructOneof) ProtoMessage() {}
+
+func (x *StructOneof) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StructOneof.ProtoReflect.Descriptor instead.
+func (*StructOneof) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *StructOneof) GetPayload() isStructOneof_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *StructOneof) GetText() string {
+	if x != nil {
+		if x, ok := x.Payload.(*StructOneof_Text); ok {
+			return x.Text
+		}
+	}
+	return ""
+}
+
+func (x *StructOneof) GetCount() int32 {
+	if x != nil {
+		if x, ok := x.Payload.(*StructOneof_Count); ok {
+			return x.Count
+		}
+	}
+	return 0
+}
+
+type isStructOneof_Payload interface {
+	isStructOneof_Payload()
+}
+
+type StructOneof_Text struct {
+	Text string `protobuf:"bytes,1,opt,name=text,proto3,oneof"`
+}
+
+type StructOneof_Count struct {
+	Count int32 `protobuf:"varint,2,opt,name=count,proto3,oneof"`
+}
+
+func (*StructOneof_Text) isStructOneof_Payload() {}
+
+func (*StructOneof_Count) isStructOneof_Payload() {}
+
 var File_users_v1_users_proto protoreflect.FileDescriptor
 
 const file_users_v1_users_proto_rawDesc = "" +
@@ -710,11 +795,14 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\x05count\x18\x01 \x01(\x05R\x05count\"5\n" +
 	"\vChatMessage\x12\x12\n" +
 	"\x04user\x18\x01 \x01(\tR\x04user\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\"{\n" +
-	"\vStructNamed\x12>\n" +
-	"\x04flag\x18\x01 \x01(\bB*\x8a\xb5\x18\x03xml\x8a\xb5\x18\x04gorm\x92\xb5\x18\tflag,attr\x92\xb5\x18\n" +
-	"primaryKeyR\x04flag\x12,\n" +
-	"\x04name\x18\x02 \x01(\tB\x18\x8a\xb5\x18\fmapstructure\x92\xb5\x18\x04nameR\x04name2\xef\x06\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"u\n" +
+	"\vStructNamed\x129\n" +
+	"\x04flag\x18\x01 \x01(\bB%\x8a\xb5\x18!xml:\"flag,attr\" gorm:\"primaryKey\"R\x04flag\x12+\n" +
+	"\x04name\x18\x02 \x01(\tB\x17\x8a\xb5\x18\x13mapstructure:\"name\"R\x04name\"^\n" +
+	"\vStructOneof\x12\x14\n" +
+	"\x04text\x18\x01 \x01(\tH\x00R\x04text\x12\x16\n" +
+	"\x05count\x18\x02 \x01(\x05H\x00R\x05countB!\n" +
+	"\apayload\x12\x16\x92\xb5\x18\x12xml:\"payload,attr\"2\xef\x06\n" +
 	"\fUsersService\x12U\n" +
 	"\aGetUser\x12\x1d.acme.users.v1.GetUserRequest\x1a\x13.acme.users.v1.User\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12a\n" +
 	"\tListUsers\x12\x1f.acme.users.v1.ListUsersRequest\x1a .acme.users.v1.ListUsersResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12Y\n" +
@@ -742,7 +830,7 @@ func file_users_v1_users_proto_rawDescGZIP() []byte {
 	return file_users_v1_users_proto_rawDescData
 }
 
-var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_users_v1_users_proto_goTypes = []any{
 	(*GetUserRequest)(nil),      // 0: acme.users.v1.GetUserRequest
 	(*ListUsersRequest)(nil),    // 1: acme.users.v1.ListUsersRequest
@@ -757,7 +845,8 @@ var file_users_v1_users_proto_goTypes = []any{
 	(*UploadUsersResponse)(nil), // 10: acme.users.v1.UploadUsersResponse
 	(*ChatMessage)(nil),         // 11: acme.users.v1.ChatMessage
 	(*StructNamed)(nil),         // 12: acme.users.v1.StructNamed
-	(*emptypb.Empty)(nil),       // 13: google.protobuf.Empty
+	(*StructOneof)(nil),         // 13: acme.users.v1.StructOneof
+	(*emptypb.Empty)(nil),       // 14: google.protobuf.Empty
 }
 var file_users_v1_users_proto_depIdxs = []int32{
 	8,  // 0: acme.users.v1.ListUsersResponse.users:type_name -> acme.users.v1.User
@@ -774,7 +863,7 @@ var file_users_v1_users_proto_depIdxs = []int32{
 	2,  // 11: acme.users.v1.UsersService.ListUsers:output_type -> acme.users.v1.ListUsersResponse
 	8,  // 12: acme.users.v1.UsersService.CreateUser:output_type -> acme.users.v1.User
 	8,  // 13: acme.users.v1.UsersService.UpdateUser:output_type -> acme.users.v1.User
-	13, // 14: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
+	14, // 14: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
 	7,  // 15: acme.users.v1.UsersService.Echo:output_type -> acme.users.v1.EchoResponse
 	8,  // 16: acme.users.v1.UsersService.WatchUsers:output_type -> acme.users.v1.User
 	10, // 17: acme.users.v1.UsersService.UploadUsers:output_type -> acme.users.v1.UploadUsersResponse
@@ -791,13 +880,17 @@ func file_users_v1_users_proto_init() {
 	if File_users_v1_users_proto != nil {
 		return
 	}
+	file_users_v1_users_proto_msgTypes[13].OneofWrappers = []any{
+		(*StructOneof_Text)(nil),
+		(*StructOneof_Count)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_users_v1_users_proto_rawDesc), len(file_users_v1_users_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

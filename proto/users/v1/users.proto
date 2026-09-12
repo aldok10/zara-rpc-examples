@@ -140,19 +140,22 @@ message ChatMessage {
 }
 
 // StructNamed demonstrates custom struct tags on generated Go structs via
-// the (custom_tag_key)/(custom_tag_value) field options. protoc-gen-zararpc
-// emits the tags as users.tags.go; zararpc-tags applies them to the
-// generated users.pb.go struct so reflection-based libraries
-// (encoding/xml, gorm, mapstructure, ...) see them.
+// the (zara.options.tags) field option. protoc-gen-zararpc emits the tags
+// as users.tags.go; zararpc-tags applies them to the generated users.pb.go
+// struct so reflection-based libraries (encoding/xml, gorm, mapstructure,
+// ...) see them.
 message StructNamed {
-  bool flag = 1 [
-    (zara.options.custom_tag_key) = "xml",
-    (zara.options.custom_tag_value) = "flag,attr",
-    (zara.options.custom_tag_key) = "gorm",
-    (zara.options.custom_tag_value) = "primaryKey"
-  ];
-  string name = 2 [
-    (zara.options.custom_tag_key) = "mapstructure",
-    (zara.options.custom_tag_value) = "name"
-  ];
+  bool flag = 1 [(zara.options.tags) = "xml:\"flag,attr\" gorm:\"primaryKey\""];
+  string name = 2 [(zara.options.tags) = "mapstructure:\"name\""];
+}
+
+// StructOneof demonstrates custom struct tags on oneofs via the
+// (zara.options.oneof_tags) oneof option. The tags land on the oneof field
+// (Payload) of the StructOneof message struct.
+message StructOneof {
+  oneof payload {
+    option (zara.options.oneof_tags) = "xml:\"payload,attr\"";
+    string text = 1;
+    int32 count = 2;
+  }
 }

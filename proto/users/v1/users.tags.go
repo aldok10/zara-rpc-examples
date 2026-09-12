@@ -6,14 +6,18 @@
 
 package usersv1
 
-// CustomTags maps Go message name -> Go field name -> struct tag
-// string, declared via (custom_tag_key)/(custom_tag_value) field
-// options. Apply it to the generated .pb.go structs with:
+// CustomTags maps Go struct name -> Go field name -> struct tag
+// string, declared via the (zara.options.tags) field option and the
+// (zara.options.oneof_tags) oneof option. Apply it to the generated
+// .pb.go structs with:
 //
 //	zararpc-tags <file>.pb.go <file>.tags.go
 var CustomTags = map[string]map[string]string{
 	`StructNamed`: {
 		`Flag`: `xml:"flag,attr" gorm:"primaryKey"`,
 		`Name`: `mapstructure:"name"`,
+	},
+	`StructOneof`: {
+		`Payload`: `xml:"payload,attr"`,
 	},
 }
