@@ -4,6 +4,7 @@ package acme.users.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "zara/options.proto";
 
 option go_package = "github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1";
 
@@ -136,4 +137,22 @@ message UploadUsersResponse {
 message ChatMessage {
   string user = 1;
   string text = 2;
+}
+
+// StructNamed demonstrates custom struct tags on generated Go structs via
+// the (custom_tag_key)/(custom_tag_value) field options. protoc-gen-zararpc
+// emits the tags as users.tags.go; zararpc-tags applies them to the
+// generated users.pb.go struct so reflection-based libraries
+// (encoding/xml, gorm, mapstructure, ...) see them.
+message StructNamed {
+  bool flag = 1 [
+    (zara.options.custom_tag_key) = "xml",
+    (zara.options.custom_tag_value) = "flag,attr",
+    (zara.options.custom_tag_key) = "gorm",
+    (zara.options.custom_tag_value) = "primaryKey"
+  ];
+  string name = 2 [
+    (zara.options.custom_tag_key) = "mapstructure",
+    (zara.options.custom_tag_value) = "name"
+  ];
 }

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package zara.options;
+
+option go_package = "github.com/aldok10/zara-rpc-examples/proto/zara;zara";
+
+import "google/protobuf/descriptor.proto";
+
+// Custom struct tag annotations for generated Go structs. Pair
+// custom_tag_key with custom_tag_value on a field to attach an arbitrary
+// struct tag; repeat the pair for multiple tags on the same field:
+//
+//	message StructNamed {
+//	  bool flag = 1 [
+//	    (custom_tag_key) = "xml",
+//	    (custom_tag_value) = "flag,attr",
+//	    (custom_tag_key) = "gorm",
+//	    (custom_tag_value) = "primaryKey"
+//	  ];
+//	}
+//
+// protoc-gen-zararpc reads these options and emits the tags as a
+// *.tags.go overlay; the zararpc-tags tool applies the overlay to the
+// generated .pb.go structs so reflection-based libraries (encoding/xml,
+// gorm, mapstructure, ...) see the tags.
+extend google.protobuf.FieldOptions {
+  // The struct tag key, e.g. "xml", "gorm", "mapstructure".
+  repeated string custom_tag_key = 50001;
+  // The struct tag value, e.g. "flag,attr", "primaryKey". Paired with
+  // custom_tag_key by index.
+  repeated string custom_tag_value = 50002;
+}

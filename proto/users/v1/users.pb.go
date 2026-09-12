@@ -7,6 +7,7 @@
 package usersv1
 
 import (
+	_ "github.com/aldok10/zara-rpc-examples/proto/zara"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -615,11 +616,68 @@ func (x *ChatMessage) GetText() string {
 	return ""
 }
 
+// StructNamed demonstrates custom struct tags on generated Go structs via
+// the (custom_tag_key)/(custom_tag_value) field options. protoc-gen-zararpc
+// emits the tags as users.tags.go; zararpc-tags applies them to the
+// generated users.pb.go struct so reflection-based libraries
+// (encoding/xml, gorm, mapstructure, ...) see them.
+type StructNamed struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Flag          bool                   `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty" xml:"flag,attr" gorm:"primaryKey"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" mapstructure:"name"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StructNamed) Reset() {
+	*x = StructNamed{}
+	mi := &file_users_v1_users_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StructNamed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StructNamed) ProtoMessage() {}
+
+func (x *StructNamed) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StructNamed.ProtoReflect.Descriptor instead.
+func (*StructNamed) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *StructNamed) GetFlag() bool {
+	if x != nil {
+		return x.Flag
+	}
+	return false
+}
+
+func (x *StructNamed) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 var File_users_v1_users_proto protoreflect.FileDescriptor
 
 const file_users_v1_users_proto_rawDesc = "" +
 	"\n" +
-	"\x14users/v1/users.proto\x12\racme.users.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\" \n" +
+	"\x14users/v1/users.proto\x12\racme.users.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x12zara/options.proto\" \n" +
 	"\x0eGetUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"N\n" +
 	"\x10ListUsersRequest\x12\x1b\n" +
@@ -652,7 +710,11 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\x05count\x18\x01 \x01(\x05R\x05count\"5\n" +
 	"\vChatMessage\x12\x12\n" +
 	"\x04user\x18\x01 \x01(\tR\x04user\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text2\xef\x06\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"{\n" +
+	"\vStructNamed\x12>\n" +
+	"\x04flag\x18\x01 \x01(\bB*\x8a\xb5\x18\x03xml\x8a\xb5\x18\x04gorm\x92\xb5\x18\tflag,attr\x92\xb5\x18\n" +
+	"primaryKeyR\x04flag\x12,\n" +
+	"\x04name\x18\x02 \x01(\tB\x18\x8a\xb5\x18\fmapstructure\x92\xb5\x18\x04nameR\x04name2\xef\x06\n" +
 	"\fUsersService\x12U\n" +
 	"\aGetUser\x12\x1d.acme.users.v1.GetUserRequest\x1a\x13.acme.users.v1.User\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12a\n" +
 	"\tListUsers\x12\x1f.acme.users.v1.ListUsersRequest\x1a .acme.users.v1.ListUsersResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12Y\n" +
@@ -680,7 +742,7 @@ func file_users_v1_users_proto_rawDescGZIP() []byte {
 	return file_users_v1_users_proto_rawDescData
 }
 
-var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_users_v1_users_proto_goTypes = []any{
 	(*GetUserRequest)(nil),      // 0: acme.users.v1.GetUserRequest
 	(*ListUsersRequest)(nil),    // 1: acme.users.v1.ListUsersRequest
@@ -694,7 +756,8 @@ var file_users_v1_users_proto_goTypes = []any{
 	(*WatchUsersRequest)(nil),   // 9: acme.users.v1.WatchUsersRequest
 	(*UploadUsersResponse)(nil), // 10: acme.users.v1.UploadUsersResponse
 	(*ChatMessage)(nil),         // 11: acme.users.v1.ChatMessage
-	(*emptypb.Empty)(nil),       // 12: google.protobuf.Empty
+	(*StructNamed)(nil),         // 12: acme.users.v1.StructNamed
+	(*emptypb.Empty)(nil),       // 13: google.protobuf.Empty
 }
 var file_users_v1_users_proto_depIdxs = []int32{
 	8,  // 0: acme.users.v1.ListUsersResponse.users:type_name -> acme.users.v1.User
@@ -711,7 +774,7 @@ var file_users_v1_users_proto_depIdxs = []int32{
 	2,  // 11: acme.users.v1.UsersService.ListUsers:output_type -> acme.users.v1.ListUsersResponse
 	8,  // 12: acme.users.v1.UsersService.CreateUser:output_type -> acme.users.v1.User
 	8,  // 13: acme.users.v1.UsersService.UpdateUser:output_type -> acme.users.v1.User
-	12, // 14: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
+	13, // 14: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
 	7,  // 15: acme.users.v1.UsersService.Echo:output_type -> acme.users.v1.EchoResponse
 	8,  // 16: acme.users.v1.UsersService.WatchUsers:output_type -> acme.users.v1.User
 	10, // 17: acme.users.v1.UsersService.UploadUsers:output_type -> acme.users.v1.UploadUsersResponse
@@ -734,7 +797,7 @@ func file_users_v1_users_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_users_v1_users_proto_rawDesc), len(file_users_v1_users_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
