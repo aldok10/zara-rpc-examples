@@ -109,8 +109,8 @@ func request_UsersService_ListUsers_0(r *http.Request, params map[string]string,
 func request_UsersService_CreateUser_0(r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &CreateUserRequest{}
 
-	// Body: entire request message.
-	if err := codec.NewDecoder(r.Body).Decode(msg); err != nil {
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(metadata.RequestMetaFromContext(r.Context()).Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
@@ -132,8 +132,8 @@ func request_UsersService_UpdateUser_0(r *http.Request, params map[string]string
 		msg.Id = tmp
 	}
 
-	// Body: entire request message.
-	if err := codec.NewDecoder(r.Body).Decode(msg); err != nil {
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(metadata.RequestMetaFromContext(r.Context()).Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
@@ -166,8 +166,8 @@ func request_UsersService_DeleteUser_0(r *http.Request, params map[string]string
 func request_UsersService_Echo_0(r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &EchoRequest{}
 
-	// Body: entire request message.
-	if err := codec.NewDecoder(r.Body).Decode(msg); err != nil {
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(metadata.RequestMetaFromContext(r.Context()).Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
@@ -211,8 +211,8 @@ func request_UsersService_WatchUsers_0(r *http.Request, params map[string]string
 func request_UsersService_UploadUsers_0(r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &User{}
 
-	// Body: entire request message.
-	if err := codec.NewDecoder(r.Body).Decode(msg); err != nil {
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(metadata.RequestMetaFromContext(r.Context()).Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
@@ -222,8 +222,8 @@ func request_UsersService_UploadUsers_0(r *http.Request, params map[string]strin
 func request_UsersService_Chat_0(r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &ChatMessage{}
 
-	// Body: entire request message.
-	if err := codec.NewDecoder(r.Body).Decode(msg); err != nil {
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(metadata.RequestMetaFromContext(r.Context()).Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
 	}
 
