@@ -4,7 +4,7 @@ package acme.users.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "zara/options.proto";
+import "zara/customtag/options.proto";
 
 option go_package = "github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1";
 

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package zara.options;
 
-option go_package = "github.com/aldok10/zara-rpc-examples/proto/zara;zara";
+option go_package = "github.com/aldok10/zara-rpc-examples/proto/zara/customtag;customtag";
 
 import "google/protobuf/descriptor.proto";
 
@@ -16,9 +16,9 @@ import "google/protobuf/descriptor.proto";
 //
 // Existing tags (protobuf, json) are preserved; a key that is already
 // present is replaced, others are appended. protoc-gen-zararpc reads this
-// option and emits the tags as a *.tags.go overlay; the zararpc-tags tool
-// applies the overlay to the generated .pb.go structs so reflection-based
-// libraries (encoding/xml, gorm, mapstructure, ...) see the tags.
+// option and patches the tags directly into the generated .pb.go structs so
+// reflection-based libraries (encoding/xml, gorm, mapstructure, ...) see
+// them.
 extend google.protobuf.FieldOptions {
   // The full struct tag literal for the field, e.g.
   // `xml:"flag,attr" gorm:"primaryKey"`.
