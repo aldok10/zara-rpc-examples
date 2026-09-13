@@ -20,15 +20,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UsersService_GetUser_FullMethodName     = "/acme.users.v1.UsersService/GetUser"
-	UsersService_ListUsers_FullMethodName   = "/acme.users.v1.UsersService/ListUsers"
-	UsersService_CreateUser_FullMethodName  = "/acme.users.v1.UsersService/CreateUser"
-	UsersService_UpdateUser_FullMethodName  = "/acme.users.v1.UsersService/UpdateUser"
-	UsersService_DeleteUser_FullMethodName  = "/acme.users.v1.UsersService/DeleteUser"
-	UsersService_Echo_FullMethodName        = "/acme.users.v1.UsersService/Echo"
-	UsersService_WatchUsers_FullMethodName  = "/acme.users.v1.UsersService/WatchUsers"
-	UsersService_UploadUsers_FullMethodName = "/acme.users.v1.UsersService/UploadUsers"
-	UsersService_Chat_FullMethodName        = "/acme.users.v1.UsersService/Chat"
+	UsersService_GetUser_FullMethodName        = "/acme.users.v1.UsersService/GetUser"
+	UsersService_ListUsers_FullMethodName      = "/acme.users.v1.UsersService/ListUsers"
+	UsersService_CreateUser_FullMethodName     = "/acme.users.v1.UsersService/CreateUser"
+	UsersService_UpdateUser_FullMethodName     = "/acme.users.v1.UsersService/UpdateUser"
+	UsersService_DeleteUser_FullMethodName     = "/acme.users.v1.UsersService/DeleteUser"
+	UsersService_Echo_FullMethodName           = "/acme.users.v1.UsersService/Echo"
+	UsersService_GetUserProfile_FullMethodName = "/acme.users.v1.UsersService/GetUserProfile"
+	UsersService_ActivateUser_FullMethodName   = "/acme.users.v1.UsersService/ActivateUser"
+	UsersService_WatchUsers_FullMethodName     = "/acme.users.v1.UsersService/WatchUsers"
+	UsersService_UploadUsers_FullMethodName    = "/acme.users.v1.UsersService/UploadUsers"
+	UsersService_Chat_FullMethodName           = "/acme.users.v1.UsersService/Chat"
 )
 
 // UsersServiceClient is the client API for UsersService service.
@@ -50,6 +52,11 @@ type UsersServiceClient interface {
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Multiple HTTP bindings via additional_bindings.
 	Echo(ctx context.Context, in *EchoRequest, opts ...grpc.CallOption) (*EchoResponse, error)
+	// GET /v1/users/{id}/profile -- response_body selects a single field of
+	// the response; the HTTP body is just the name, not the full User.
+	GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
+	// POST /v1/users/{name}:activate -- custom verb with a path param.
+	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*User, error)
 	// Server streaming: GET /v1/users:watch -- responses streamed as SSE.
 	WatchUsers(ctx context.Context, in *WatchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error)
 	// Client streaming: POST /v1/users:upload -- requests streamed as NDJSON.
@@ -126,6 +133,26 @@ func (c *usersServiceClient) Echo(ctx context.Context, in *EchoRequest, opts ...
 	return out, nil
 }
 
+func (c *usersServiceClient) GetUserProfile(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(User)
+	err := c.cc.Invoke(ctx, UsersService_GetUserProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersServiceClient) ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*User, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(User)
+	err := c.cc.Invoke(ctx, UsersService_ActivateUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *usersServiceClient) WatchUsers(ctx context.Context, in *WatchUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[User], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &UsersService_ServiceDesc.Streams[0], UsersService_WatchUsers_FullMethodName, cOpts...)
@@ -190,6 +217,11 @@ type UsersServiceServer interface {
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	// Multiple HTTP bindings via additional_bindings.
 	Echo(context.Context, *EchoRequest) (*EchoResponse, error)
+	// GET /v1/users/{id}/profile -- response_body selects a single field of
+	// the response; the HTTP body is just the name, not the full User.
+	GetUserProfile(context.Context, *GetUserRequest) (*User, error)
+	// POST /v1/users/{name}:activate -- custom verb with a path param.
+	ActivateUser(context.Context, *ActivateUserRequest) (*User, error)
 	// Server streaming: GET /v1/users:watch -- responses streamed as SSE.
 	WatchUsers(*WatchUsersRequest, grpc.ServerStreamingServer[User]) error
 	// Client streaming: POST /v1/users:upload -- requests streamed as NDJSON.
@@ -223,6 +255,12 @@ func (UnimplementedUsersServiceServer) DeleteUser(context.Context, *DeleteUserRe
 }
 func (UnimplementedUsersServiceServer) Echo(context.Context, *EchoRequest) (*EchoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Echo not implemented")
+}
+func (UnimplementedUsersServiceServer) GetUserProfile(context.Context, *GetUserRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserProfile not implemented")
+}
+func (UnimplementedUsersServiceServer) ActivateUser(context.Context, *ActivateUserRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
 }
 func (UnimplementedUsersServiceServer) WatchUsers(*WatchUsersRequest, grpc.ServerStreamingServer[User]) error {
 	return status.Errorf(codes.Unimplemented, "method WatchUsers not implemented")
@@ -362,6 +400,42 @@ func _UsersService_Echo_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetUserProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_GetUserProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetUserProfile(ctx, req.(*GetUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UsersService_ActivateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).ActivateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UsersService_ActivateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).ActivateUser(ctx, req.(*ActivateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UsersService_WatchUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(WatchUsersRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -417,6 +491,14 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Echo",
 			Handler:    _UsersService_Echo_Handler,
+		},
+		{
+			MethodName: "GetUserProfile",
+			Handler:    _UsersService_GetUserProfile_Handler,
+		},
+		{
+			MethodName: "ActivateUser",
+			Handler:    _UsersService_ActivateUser_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

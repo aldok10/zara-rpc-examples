@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -60,12 +61,12 @@ func main() {
 	// ---- JSON client (default codec) ----
 	jsonClient := usersv1.NewUsersServiceHTTPClient(baseURL)
 	fmt.Println("== JSON client ==")
-	runUnary(ctx, jsonClient)
+	runUnary(ctx, baseURL, jsonClient)
 
 	// ---- Protobuf client (binary codec) ----
 	protoClient := usersv1.NewUsersServiceHTTPClient(baseURL, client.WithCodec(encoding.ProtoCodec{}))
 	fmt.Println("== Protobuf client ==")
-	runUnary(ctx, protoClient)
+	runUnary(ctx, baseURL, protoClient)
 
 	// ---- Streaming over JSON ----
 	fmt.Println("== Streaming (JSON) ==")
@@ -111,7 +112,7 @@ func main() {
 	fmt.Println("client demo OK")
 }
 
-func runUnary(ctx context.Context, c usersv1.UsersServiceHTTPClient) {
+func runUnary(ctx context.Context, baseURL string, c usersv1.UsersServiceHTTPClient) {
 	// Create a user — requires the admin role (admins allow rule).
 	created, err := c.CreateUser(ctx, &usersv1.CreateUserRequest{Name: "SDK User", Email: "sdk@example.com"},
 		client.WithHeader(metadata.HeaderAuthorization, bearer("admin")),
@@ -138,6 +139,35 @@ func runUnary(ctx context.Context, c usersv1.UsersServiceHTTPClient) {
 	} else {
 		fmt.Printf("GetUser (no auth) -> unexpected success\n")
 	}
+
+	// ActivateUser via the custom verb route POST /v1/users/{name}:activate
+	// — admin only (not in the readers allow rule).
+	activated, err := c.ActivateUser(ctx, &usersv1.ActivateUserRequest{Name: created.Id},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("admin")),
+	)
+	if err != nil {
+		log.Fatalf("ActivateUser: %v", err)
+	}
+	fmt.Printf("ActivateUser -> id=%s name=%s (admin token, custom verb)\n", activated.Id, activated.Name)
+
+	// GetUserProfile uses response_body: the HTTP body is the selected field
+	// only (the name), not the full User message. The typed client would try
+	// to unmarshal the field into User, so this call uses net/http directly.
+	profileReq, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/v1/users/"+created.Id+"/profile", nil)
+	if err != nil {
+		log.Fatalf("GetUserProfile request: %v", err)
+	}
+	profileReq.Header.Set(metadata.HeaderAuthorization, bearer("admin"))
+	profileResp, err := http.DefaultClient.Do(profileReq)
+	if err != nil {
+		log.Fatalf("GetUserProfile: %v", err)
+	}
+	profileBody, readErr := io.ReadAll(profileResp.Body)
+	profileResp.Body.Close()
+	if readErr != nil {
+		log.Fatalf("GetUserProfile read: %v", readErr)
+	}
+	fmt.Printf("GetUserProfile -> body=%s (response_body: name)\n", profileBody)
 
 	// A reader is denied DeleteUser by the deny rule (403).
 	_, err = c.DeleteUser(ctx, &usersv1.DeleteUserRequest{Id: created.Id},

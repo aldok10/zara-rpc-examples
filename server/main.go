@@ -144,6 +144,29 @@ func (s *usersService) Echo(ctx runtime.Ctx, req *usersv1.EchoRequest) (*usersv1
 	return &usersv1.EchoResponse{Message: req.Message}, nil
 }
 
+// GetUserProfile returns the stored user; the response_body annotation on
+// the route makes the HTTP body just the name field, not the full message.
+func (s *usersService) GetUserProfile(ctx runtime.Ctx, req *usersv1.GetUserRequest) (*usersv1.User, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	u, ok := s.users[req.Id]
+	if !ok {
+		return nil, status.NewErrorf(codes.CodeNotFound, "user %q not found", req.Id)
+	}
+	return u, nil
+}
+
+// ActivateUser is reached via the custom verb route POST /v1/users/{name}:activate.
+func (s *usersService) ActivateUser(ctx runtime.Ctx, req *usersv1.ActivateUserRequest) (*usersv1.User, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	u, ok := s.users[req.Name]
+	if !ok {
+		return nil, status.NewErrorf(codes.CodeNotFound, "user %q not found", req.Name)
+	}
+	return u, nil
+}
+
 // WatchUsers streams all users every interval_seconds (SSE transport).
 func (s *usersService) WatchUsers(ctx runtime.Ctx, req *usersv1.WatchUsersRequest, stream runtime.ServerStream[*usersv1.User]) error {
 	interval := time.Duration(req.IntervalSeconds) * time.Second
@@ -238,6 +261,14 @@ func (g *grpcUsersService) DeleteUser(ctx context.Context, req *usersv1.DeleteUs
 
 func (g *grpcUsersService) Echo(ctx context.Context, req *usersv1.EchoRequest) (*usersv1.EchoResponse, error) {
 	return g.usersService.Echo(grpcCtxFor(ctx, "/acme.users.v1.UsersService/Echo"), req)
+}
+
+func (g *grpcUsersService) GetUserProfile(ctx context.Context, req *usersv1.GetUserRequest) (*usersv1.User, error) {
+	return g.usersService.GetUserProfile(grpcCtxFor(ctx, "/acme.users.v1.UsersService/GetUserProfile"), req)
+}
+
+func (g *grpcUsersService) ActivateUser(ctx context.Context, req *usersv1.ActivateUserRequest) (*usersv1.User, error) {
+	return g.usersService.ActivateUser(grpcCtxFor(ctx, "/acme.users.v1.UsersService/ActivateUser"), req)
 }
 
 func (g *grpcUsersService) WatchUsers(req *usersv1.WatchUsersRequest, stream grpc.ServerStreamingServer[usersv1.User]) error {

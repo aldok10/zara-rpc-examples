@@ -59,6 +59,22 @@ service UsersService {
     };
   }
 
+  // GET /v1/users/{id}/profile -- response_body selects a single field of
+  // the response; the HTTP body is just the name, not the full User.
+  rpc GetUserProfile(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/users/{id}/profile"
+      response_body: "name"
+    };
+  }
+
+  // POST /v1/users/{name}:activate -- custom verb with a path param.
+  rpc ActivateUser(ActivateUserRequest) returns (User) {
+    option (google.api.http) = {
+      post: "/v1/users/{name}:activate"
+    };
+  }
+
   // Server streaming: GET /v1/users:watch -- responses streamed as SSE.
   rpc WatchUsers(WatchUsersRequest) returns (stream User) {
     option (google.api.http) = {
@@ -118,6 +134,10 @@ message EchoRequest {
 
 message EchoResponse {
   string message = 1;
+}
+
+message ActivateUserRequest {
+  string name = 1;
 }
 
 message User {

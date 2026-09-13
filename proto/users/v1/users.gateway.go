@@ -95,6 +95,30 @@ func (g *gatewayUsersService) Echo(ctx runtime.Ctx, req *EchoRequest) (*EchoResp
 	return resp, nil
 }
 
+func (g *gatewayUsersService) GetUserProfile(ctx runtime.Ctx, req *GetUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
+	}
+	resp, err := g.client.GetUserProfile(gctx, req)
+	if err != nil {
+		return nil, status.FromGRPCStatus(err)
+	}
+	return resp, nil
+}
+
+func (g *gatewayUsersService) ActivateUser(ctx runtime.Ctx, req *ActivateUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
+	}
+	resp, err := g.client.ActivateUser(gctx, req)
+	if err != nil {
+		return nil, status.FromGRPCStatus(err)
+	}
+	return resp, nil
+}
+
 func (g *gatewayUsersService) WatchUsers(ctx runtime.Ctx, req *WatchUsersRequest, stream runtime.ServerStream[*User]) error {
 	gctx := ctx.Context()
 	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {

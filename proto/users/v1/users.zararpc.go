@@ -28,6 +28,8 @@ type UsersServiceHandler interface {
 	UpdateUser(runtime.Ctx, *UpdateUserRequest) (*User, error)
 	DeleteUser(runtime.Ctx, *DeleteUserRequest) (*emptypb.Empty, error)
 	Echo(runtime.Ctx, *EchoRequest) (*EchoResponse, error)
+	GetUserProfile(runtime.Ctx, *GetUserRequest) (*User, error)
+	ActivateUser(runtime.Ctx, *ActivateUserRequest) (*User, error)
 	WatchUsers(runtime.Ctx, *WatchUsersRequest, runtime.ServerStream[*User]) error
 	UploadUsers(runtime.Ctx, runtime.ClientStream[*User]) (*UploadUsersResponse, error)
 	Chat(runtime.Ctx, runtime.BidiStream[*ChatMessage, *ChatMessage]) error
@@ -58,6 +60,14 @@ func (UnimplementedUsersServiceHandler) DeleteUser(runtime.Ctx, *DeleteUserReque
 
 func (UnimplementedUsersServiceHandler) Echo(runtime.Ctx, *EchoRequest) (*EchoResponse, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method Echo not implemented")
+}
+
+func (UnimplementedUsersServiceHandler) GetUserProfile(runtime.Ctx, *GetUserRequest) (*User, error) {
+	return nil, status.NewErrorf(codes.CodeUnimplemented, "method GetUserProfile not implemented")
+}
+
+func (UnimplementedUsersServiceHandler) ActivateUser(runtime.Ctx, *ActivateUserRequest) (*User, error) {
+	return nil, status.NewErrorf(codes.CodeUnimplemented, "method ActivateUser not implemented")
 }
 
 func (UnimplementedUsersServiceHandler) WatchUsers(runtime.Ctx, *WatchUsersRequest, runtime.ServerStream[*User]) error {
@@ -168,6 +178,30 @@ func request_UsersService_Echo_1(ctx runtime.Ctx, r *http.Request, params map[st
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
+func request_UsersService_GetUserProfile_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+	msg := &GetUserRequest{}
+	meta := ctx.Meta()
+
+	// Path parameters.
+	if v, ok := params["id"]; ok {
+		msg.Id = v
+	}
+
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+}
+
+func request_UsersService_ActivateUser_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+	msg := &ActivateUserRequest{}
+	meta := ctx.Meta()
+
+	// Path parameters.
+	if v, ok := params["name"]; ok {
+		msg.Name = v
+	}
+
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+}
+
 func request_UsersService_WatchUsers_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
 	msg := &WatchUsersRequest{}
 	meta := ctx.Meta()
@@ -210,26 +244,30 @@ func request_UsersService_Chat_0(ctx runtime.Ctx, r *http.Request, params map[st
 
 // Service and endpoint constants.
 const (
-	UsersService_FullName           = "acme.users.v1.UsersService"
-	UsersService_GetUser_Method     = "GetUser"
-	UsersService_GetUser_Path       = "/v1/users/{id}"
-	UsersService_ListUsers_Method   = "ListUsers"
-	UsersService_ListUsers_Path     = "/v1/users"
-	UsersService_CreateUser_Method  = "CreateUser"
-	UsersService_CreateUser_Path    = "/v1/users"
-	UsersService_UpdateUser_Method  = "UpdateUser"
-	UsersService_UpdateUser_Path    = "/v1/users/{id}"
-	UsersService_DeleteUser_Method  = "DeleteUser"
-	UsersService_DeleteUser_Path    = "/v1/users/{id}"
-	UsersService_Echo_Method        = "Echo"
-	UsersService_Echo_Path          = "/v1/echo"
-	UsersService_Echo_Path_1        = "/v1/echo/{message}"
-	UsersService_WatchUsers_Method  = "WatchUsers"
-	UsersService_WatchUsers_Path    = "/v1/users:watch"
-	UsersService_UploadUsers_Method = "UploadUsers"
-	UsersService_UploadUsers_Path   = "/v1/users:upload"
-	UsersService_Chat_Method        = "Chat"
-	UsersService_Chat_Path          = "/v1/chat"
+	UsersService_FullName              = "acme.users.v1.UsersService"
+	UsersService_GetUser_Method        = "GetUser"
+	UsersService_GetUser_Path          = "/v1/users/{id}"
+	UsersService_ListUsers_Method      = "ListUsers"
+	UsersService_ListUsers_Path        = "/v1/users"
+	UsersService_CreateUser_Method     = "CreateUser"
+	UsersService_CreateUser_Path       = "/v1/users"
+	UsersService_UpdateUser_Method     = "UpdateUser"
+	UsersService_UpdateUser_Path       = "/v1/users/{id}"
+	UsersService_DeleteUser_Method     = "DeleteUser"
+	UsersService_DeleteUser_Path       = "/v1/users/{id}"
+	UsersService_Echo_Method           = "Echo"
+	UsersService_Echo_Path             = "/v1/echo"
+	UsersService_Echo_Path_1           = "/v1/echo/{message}"
+	UsersService_GetUserProfile_Method = "GetUserProfile"
+	UsersService_GetUserProfile_Path   = "/v1/users/{id}/profile"
+	UsersService_ActivateUser_Method   = "ActivateUser"
+	UsersService_ActivateUser_Path     = "/v1/users/{name}:activate"
+	UsersService_WatchUsers_Method     = "WatchUsers"
+	UsersService_WatchUsers_Path       = "/v1/users:watch"
+	UsersService_UploadUsers_Method    = "UploadUsers"
+	UsersService_UploadUsers_Path      = "/v1/users:upload"
+	UsersService_Chat_Method           = "Chat"
+	UsersService_Chat_Path             = "/v1/chat"
 )
 
 // Register_GetUser builds the GetUser endpoint.
@@ -361,6 +399,43 @@ func Register_Echo_1(svc UsersServiceHandler) *runtime.Operation {
 		Build()
 }
 
+// Register_GetUserProfile builds the GetUserProfile endpoint.
+func Register_GetUserProfile(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[GetUserRequest, User])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_GetUserProfile_Path).
+		SetRPC(UsersService_GetUserProfile_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
+			resp, err := svc.GetUserProfile(ctx, req.Msg())
+			if err != nil {
+				return nil, err
+			}
+			return runtime.NewResponse(resp), nil
+		}).
+		SetResponseBody("name").
+		SetRequestBuilder(request_UsersService_GetUserProfile_0).
+		Build()
+}
+
+// Register_ActivateUser builds the ActivateUser endpoint.
+func Register_ActivateUser(svc UsersServiceHandler) *runtime.Operation {
+	var op runtime.Operation
+	return (*runtime.OperationBuilder[ActivateUserRequest, User])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(UsersService_ActivateUser_Path).
+		SetRPC(UsersService_ActivateUser_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[ActivateUserRequest]) (*runtime.Response[User], error) {
+			resp, err := svc.ActivateUser(ctx, req.Msg())
+			if err != nil {
+				return nil, err
+			}
+			return runtime.NewResponse(resp), nil
+		}).
+		SetRequestBuilder(request_UsersService_ActivateUser_0).
+		Build()
+}
+
 // Register_WatchUsers builds the WatchUsers endpoint.
 func Register_WatchUsers(svc UsersServiceHandler) *runtime.Operation {
 	var op runtime.Operation
@@ -416,6 +491,8 @@ func RegisterUsersServiceRoutes(mux *runtime.Mux, svc UsersServiceHandler) error
 		Add(Register_DeleteUser(svc)).
 		Add(Register_Echo(svc)).
 		Add(Register_Echo_1(svc)).
+		Add(Register_GetUserProfile(svc)).
+		Add(Register_ActivateUser(svc)).
 		Add(Register_WatchUsers(svc)).
 		Add(Register_UploadUsers(svc)).
 		Add(Register_Chat(svc)))
@@ -429,6 +506,8 @@ type UsersServiceHTTPClient interface {
 	UpdateUser(context.Context, *UpdateUserRequest, ...client.ClientOption) (*User, error)
 	DeleteUser(context.Context, *DeleteUserRequest, ...client.ClientOption) (*emptypb.Empty, error)
 	Echo(context.Context, *EchoRequest, ...client.ClientOption) (*EchoResponse, error)
+	GetUserProfile(context.Context, *GetUserRequest, ...client.ClientOption) (*User, error)
+	ActivateUser(context.Context, *ActivateUserRequest, ...client.ClientOption) (*User, error)
 	WatchUsers(context.Context, *WatchUsersRequest, ...client.ClientOption) (client.ServerStreamForClient[User], error)
 	UploadUsers(context.Context, ...client.ClientOption) (client.ClientStreamForClient[User, UploadUsersResponse], error)
 	Chat(context.Context, ...client.ClientOption) (client.BidiStreamForClient[ChatMessage, ChatMessage], error)
@@ -494,6 +573,24 @@ func (c *usersServiceHTTPClient) DeleteUser(ctx context.Context, req *DeleteUser
 func (c *usersServiceHTTPClient) Echo(ctx context.Context, req *EchoRequest, extraOpts ...client.ClientOption) (*EchoResponse, error) {
 	resp := &EchoResponse{}
 	err := c.DoUnary(ctx, http.MethodPost, UsersService_Echo_Path, "*", req, resp, extraOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *usersServiceHTTPClient) GetUserProfile(ctx context.Context, req *GetUserRequest, extraOpts ...client.ClientOption) (*User, error) {
+	resp := &User{}
+	err := c.DoUnary(ctx, http.MethodGet, UsersService_GetUserProfile_Path, "", req, resp, extraOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *usersServiceHTTPClient) ActivateUser(ctx context.Context, req *ActivateUserRequest, extraOpts ...client.ClientOption) (*User, error) {
+	resp := &User{}
+	err := c.DoUnary(ctx, http.MethodPost, UsersService_ActivateUser_Path, "", req, resp, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
