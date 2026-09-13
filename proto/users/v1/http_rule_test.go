@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	routing "github.com/aldok10/zara-rpc/routing"
 	"github.com/aldok10/zara-rpc/runtime"
 )
 
@@ -35,7 +36,7 @@ func (s *testService) ActivateUser(ctx runtime.Ctx, req *ActivateUserRequest) (*
 // over httptest.
 func newTestMux(t *testing.T, svc UsersServiceHandler) *httptest.Server {
 	t.Helper()
-	mux := runtime.NewMux()
+	mux := routing.NewMux()
 	if err := RegisterUsersServiceRoutes(mux, svc); err != nil {
 		t.Fatal(err)
 	}

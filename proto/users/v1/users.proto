@@ -25,6 +25,15 @@ service UsersService {
     };
   }
 
+  // GET /v1/users/getByID?id=1 -- automatic query binding: fields not bound
+  // by the path template or body become query parameters (google.api.http
+  // rules), nested dot-paths and repeated fields included.
+  rpc GetUserByID(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/users/getByID"
+    };
+  }
+
   // POST /v1/users -- body: "*"
   rpc CreateUser(CreateUserRequest) returns (User) {
     option (google.api.http) = {
@@ -99,6 +108,28 @@ service UsersService {
   }
 }
 
+// AuthService demonstrates token issuance: register creates a user with a
+// bcrypt-hashed password, login verifies credentials and returns a JWT.
+// The endpoints are public (no auth chain) — they are how clients obtain
+// tokens.
+service AuthService {
+  // POST /v1/auth/register -- create a user and return its id.
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/register"
+      body: "*"
+    };
+  }
+
+  // POST /v1/auth/login -- verify credentials and return a JWT.
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+}
+
 message GetUserRequest {
   string id = 1;
 }
@@ -146,6 +177,21 @@ message User {
   string email = 3;
 }
 
+// UserRow is the GORM model for the users table. Like Todo, every field
+// carries (zara.options.tags) so the generated struct is a valid database
+// model (primary key, unique index, auto timestamps) with no hand-written
+// mapping struct. The extra fields (password_hash, role) support the auth
+// flow and are never exposed through the API — User is the wire type.
+message UserRow {
+  string id = 1 [(zara.options.tags) = "gorm:\"primaryKey;size:36\" mapstructure:\"id\""];
+  string name = 2 [(zara.options.tags) = "gorm:\"size:255;not null\" mapstructure:\"name\""];
+  string email = 3 [(zara.options.tags) = "gorm:\"uniqueIndex;size:255\" mapstructure:\"email\""];
+  string password_hash = 4 [(zara.options.tags) = "gorm:\"column:password_hash;size:255\" mapstructure:\"password_hash\""];
+  string role = 5 [(zara.options.tags) = "gorm:\"default:user;size:32\" mapstructure:\"role\""];
+  int64 created_at = 6 [(zara.options.tags) = "gorm:\"autoCreateTime\" mapstructure:\"created_at\""];
+  int64 updated_at = 7 [(zara.options.tags) = "gorm:\"autoUpdateTime\" mapstructure:\"updated_at\""];
+}
+
 message WatchUsersRequest {
   int32 interval_seconds = 1;
 }
@@ -159,23 +205,24 @@ message ChatMessage {
   string text = 2;
 }
 
-// StructNamed demonstrates custom struct tags on generated Go structs via
-// the (zara.options.tags) field option. protoc-gen-zararpc emits the tags
-// as users.tags.go; zararpc-tags applies them to the generated users.pb.go
-// struct so reflection-based libraries (encoding/xml, gorm, mapstructure,
-// ...) see them.
-message StructNamed {
-  bool flag = 1 [(zara.options.tags) = "xml:\"flag,attr\" gorm:\"primaryKey\""];
-  string name = 2 [(zara.options.tags) = "mapstructure:\"name\""];
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  string email = 3;
+  string role = 4;
 }
 
-// StructOneof demonstrates custom struct tags on oneofs via the
-// (zara.options.oneof_tags) oneof option. The tags land on the oneof field
-// (Payload) of the StructOneof message struct.
-message StructOneof {
-  oneof payload {
-    option (zara.options.oneof_tags) = "xml:\"payload,attr\"";
-    string text = 1;
-    int32 count = 2;
-  }
+message RegisterResponse {
+  string id = 1;
+  string username = 2;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  User user = 2;
 }

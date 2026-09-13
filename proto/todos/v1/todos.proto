@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package acme.todos.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "zara/customtag/options.proto";
+
+option go_package = "github.com/aldok10/zara-rpc-examples/proto/todos/v1;todosv1";
+
+// TodoService demonstrates a second protobuf contract whose generated
+// structs are used directly as GORM models (SQLite) via the
+// (zara.options.tags) custom-tag feature — no hand-written mapping struct
+// between the proto message and the database row.
+service TodoService {
+  // POST /v1/todos -- create a todo owned by the authenticated user.
+  rpc CreateTodo(CreateTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      post: "/v1/todos"
+      body: "*"
+    };
+  }
+
+  // GET /v1/todos -- list the authenticated user's todos.
+  rpc ListTodos(ListTodosRequest) returns (ListTodosResponse) {
+    option (google.api.http) = {
+      get: "/v1/todos"
+    };
+  }
+
+  // GET /v1/todos/{id} -- fetch one of the authenticated user's todos.
+  rpc GetTodo(GetTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      get: "/v1/todos/{id}"
+    };
+  }
+
+  // PUT /v1/todos/{id} -- update title/done on the authenticated user's
+  // todo.
+  rpc UpdateTodo(UpdateTodoRequest) returns (Todo) {
+    option (google.api.http) = {
+      put: "/v1/todos/{id}"
+      body: "*"
+    };
+  }
+
+  // DELETE /v1/todos/{id} -- delete the authenticated user's todo.
+  rpc DeleteTodo(DeleteTodoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/todos/{id}"
+    };
+  }
+}
+
+message CreateTodoRequest {
+  // The title is the only client-supplied field; owner_id comes from the
+  // authenticated claims, never from the request body.
+  string title = 1;
+}
+
+message ListTodosRequest {}
+
+message ListTodosResponse {
+  repeated Todo todos = 1;
+}
+
+message GetTodoRequest {
+  string id = 1;
+}
+
+message UpdateTodoRequest {
+  string id = 1;
+  string title = 2;
+  bool done = 3;
+}
+
+message DeleteTodoRequest {
+  string id = 1;
+}
+
+// Todo is the GORM model: every field carries (zara.options.tags) so the
+// generated struct is a valid database model (primary key, index, auto
+// timestamps) and maps with mapstructure. Timestamps are int64 unix
+// seconds so GORM's autoCreateTime/autoUpdateTime fill them natively.
+message Todo {
+  string id = 1 [(zara.options.tags) = "gorm:\"primaryKey;size:36\" mapstructure:\"id\""];
+  string owner_id = 2 [(zara.options.tags) = "gorm:\"index;size:36\" mapstructure:\"owner_id\""];
+  string title = 3 [(zara.options.tags) = "gorm:\"size:255;not null\" mapstructure:\"title\""];
+  bool done = 4 [(zara.options.tags) = "gorm:\"default:false\" mapstructure:\"done\""];
+  int64 created_at = 5 [(zara.options.tags) = "gorm:\"autoCreateTime\" mapstructure:\"created_at\""];
+  int64 updated_at = 6 [(zara.options.tags) = "gorm:\"autoUpdateTime\" mapstructure:\"updated_at\""];
+}

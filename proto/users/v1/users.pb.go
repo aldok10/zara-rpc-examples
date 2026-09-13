@@ -520,6 +520,103 @@ func (x *User) GetEmail() string {
 	return ""
 }
 
+// UserRow is the GORM model for the users table. Like Todo, every field
+// carries (zara.options.tags) so the generated struct is a valid database
+// model (primary key, unique index, auto timestamps) with no hand-written
+// mapping struct. The extra fields (password_hash, role) support the auth
+// flow and are never exposed through the API — User is the wire type.
+type UserRow struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" gorm:"primaryKey;size:36" mapstructure:"id"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" gorm:"size:255;not null" mapstructure:"name"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty" gorm:"uniqueIndex;size:255" mapstructure:"email"`
+	PasswordHash  string                 `protobuf:"bytes,4,opt,name=password_hash,json=passwordHash,proto3" json:"password_hash,omitempty" gorm:"column:password_hash;size:255" mapstructure:"password_hash"`
+	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty" gorm:"default:user;size:32" mapstructure:"role"`
+	CreatedAt     int64                  `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" gorm:"autoCreateTime" mapstructure:"created_at"`
+	UpdatedAt     int64                  `protobuf:"varint,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" gorm:"autoUpdateTime" mapstructure:"updated_at"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserRow) Reset() {
+	*x = UserRow{}
+	mi := &file_users_v1_users_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserRow) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserRow) ProtoMessage() {}
+
+func (x *UserRow) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserRow.ProtoReflect.Descriptor instead.
+func (*UserRow) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UserRow) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UserRow) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UserRow) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UserRow) GetPasswordHash() string {
+	if x != nil {
+		return x.PasswordHash
+	}
+	return ""
+}
+
+func (x *UserRow) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *UserRow) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *UserRow) GetUpdatedAt() int64 {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return 0
+}
+
 type WatchUsersRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	IntervalSeconds int32                  `protobuf:"varint,1,opt,name=interval_seconds,json=intervalSeconds,proto3" json:"interval_seconds,omitempty"`
@@ -529,7 +626,7 @@ type WatchUsersRequest struct {
 
 func (x *WatchUsersRequest) Reset() {
 	*x = WatchUsersRequest{}
-	mi := &file_users_v1_users_proto_msgTypes[10]
+	mi := &file_users_v1_users_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -541,7 +638,7 @@ func (x *WatchUsersRequest) String() string {
 func (*WatchUsersRequest) ProtoMessage() {}
 
 func (x *WatchUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_users_v1_users_proto_msgTypes[10]
+	mi := &file_users_v1_users_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -554,7 +651,7 @@ func (x *WatchUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchUsersRequest.ProtoReflect.Descriptor instead.
 func (*WatchUsersRequest) Descriptor() ([]byte, []int) {
-	return file_users_v1_users_proto_rawDescGZIP(), []int{10}
+	return file_users_v1_users_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *WatchUsersRequest) GetIntervalSeconds() int32 {
@@ -573,7 +670,7 @@ type UploadUsersResponse struct {
 
 func (x *UploadUsersResponse) Reset() {
 	*x = UploadUsersResponse{}
-	mi := &file_users_v1_users_proto_msgTypes[11]
+	mi := &file_users_v1_users_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -585,7 +682,7 @@ func (x *UploadUsersResponse) String() string {
 func (*UploadUsersResponse) ProtoMessage() {}
 
 func (x *UploadUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_users_v1_users_proto_msgTypes[11]
+	mi := &file_users_v1_users_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -598,7 +695,7 @@ func (x *UploadUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadUsersResponse.ProtoReflect.Descriptor instead.
 func (*UploadUsersResponse) Descriptor() ([]byte, []int) {
-	return file_users_v1_users_proto_rawDescGZIP(), []int{11}
+	return file_users_v1_users_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UploadUsersResponse) GetCount() int32 {
@@ -618,7 +715,7 @@ type ChatMessage struct {
 
 func (x *ChatMessage) Reset() {
 	*x = ChatMessage{}
-	mi := &file_users_v1_users_proto_msgTypes[12]
+	mi := &file_users_v1_users_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +727,7 @@ func (x *ChatMessage) String() string {
 func (*ChatMessage) ProtoMessage() {}
 
 func (x *ChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_users_v1_users_proto_msgTypes[12]
+	mi := &file_users_v1_users_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +740,7 @@ func (x *ChatMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
 func (*ChatMessage) Descriptor() ([]byte, []int) {
-	return file_users_v1_users_proto_rawDescGZIP(), []int{12}
+	return file_users_v1_users_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ChatMessage) GetUser() string {
@@ -660,91 +757,30 @@ func (x *ChatMessage) GetText() string {
 	return ""
 }
 
-// StructNamed demonstrates custom struct tags on generated Go structs via
-// the (zara.options.tags) field option. protoc-gen-zararpc emits the tags
-// as users.tags.go; zararpc-tags applies them to the generated users.pb.go
-// struct so reflection-based libraries (encoding/xml, gorm, mapstructure,
-// ...) see them.
-type StructNamed struct {
+type RegisterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Flag          bool                   `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty" gorm:"primaryKey" xml:"flag,attr"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" mapstructure:"name"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *StructNamed) Reset() {
-	*x = StructNamed{}
-	mi := &file_users_v1_users_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StructNamed) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StructNamed) ProtoMessage() {}
-
-func (x *StructNamed) ProtoReflect() protoreflect.Message {
-	mi := &file_users_v1_users_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StructNamed.ProtoReflect.Descriptor instead.
-func (*StructNamed) Descriptor() ([]byte, []int) {
-	return file_users_v1_users_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *StructNamed) GetFlag() bool {
-	if x != nil {
-		return x.Flag
-	}
-	return false
-}
-
-func (x *StructNamed) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-// StructOneof demonstrates custom struct tags on oneofs via the
-// (zara.options.oneof_tags) oneof option. The tags land on the oneof field
-// (Payload) of the StructOneof message struct.
-type StructOneof struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Payload:
-	//
-	//	*StructOneof_Text
-	//	*StructOneof_Count
-	Payload       isStructOneof_Payload `protobuf_oneof:"payload" xml:"payload,attr"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StructOneof) Reset() {
-	*x = StructOneof{}
+func (x *RegisterRequest) Reset() {
+	*x = RegisterRequest{}
 	mi := &file_users_v1_users_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *StructOneof) String() string {
+func (x *RegisterRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StructOneof) ProtoMessage() {}
+func (*RegisterRequest) ProtoMessage() {}
 
-func (x *StructOneof) ProtoReflect() protoreflect.Message {
+func (x *RegisterRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_users_v1_users_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -756,51 +792,194 @@ func (x *StructOneof) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StructOneof.ProtoReflect.Descriptor instead.
-func (*StructOneof) Descriptor() ([]byte, []int) {
+// Deprecated: Use RegisterRequest.ProtoReflect.Descriptor instead.
+func (*RegisterRequest) Descriptor() ([]byte, []int) {
 	return file_users_v1_users_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *StructOneof) GetPayload() isStructOneof_Payload {
+func (x *RegisterRequest) GetUsername() string {
 	if x != nil {
-		return x.Payload
-	}
-	return nil
-}
-
-func (x *StructOneof) GetText() string {
-	if x != nil {
-		if x, ok := x.Payload.(*StructOneof_Text); ok {
-			return x.Text
-		}
+		return x.Username
 	}
 	return ""
 }
 
-func (x *StructOneof) GetCount() int32 {
+func (x *RegisterRequest) GetPassword() string {
 	if x != nil {
-		if x, ok := x.Payload.(*StructOneof_Count); ok {
-			return x.Count
-		}
+		return x.Password
 	}
-	return 0
+	return ""
 }
 
-type isStructOneof_Payload interface {
-	isStructOneof_Payload()
+func (x *RegisterRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
 }
 
-type StructOneof_Text struct {
-	Text string `protobuf:"bytes,1,opt,name=text,proto3,oneof"`
+func (x *RegisterRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
 }
 
-type StructOneof_Count struct {
-	Count int32 `protobuf:"varint,2,opt,name=count,proto3,oneof"`
+type RegisterResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (*StructOneof_Text) isStructOneof_Payload() {}
+func (x *RegisterResponse) Reset() {
+	*x = RegisterResponse{}
+	mi := &file_users_v1_users_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
 
-func (*StructOneof_Count) isStructOneof_Payload() {}
+func (x *RegisterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterResponse) ProtoMessage() {}
+
+func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
+func (*RegisterResponse) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RegisterResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RegisterResponse) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type LoginRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginRequest) Reset() {
+	*x = LoginRequest{}
+	mi := &file_users_v1_users_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginRequest) ProtoMessage() {}
+
+func (x *LoginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
+func (*LoginRequest) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *LoginRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+type LoginResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	User          *User                  `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginResponse) Reset() {
+	*x = LoginResponse{}
+	mi := &file_users_v1_users_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginResponse) ProtoMessage() {}
+
+func (x *LoginResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_users_v1_users_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
+func (*LoginResponse) Descriptor() ([]byte, []int) {
+	return file_users_v1_users_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *LoginResponse) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *LoginResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
 
 var File_users_v1_users_proto protoreflect.FileDescriptor
 
@@ -834,24 +1013,42 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email\">\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\"\xb9\x04\n" +
+	"\aUserRow\x12?\n" +
+	"\x02id\x18\x01 \x01(\tB/\x8a\xb5\x18+gorm:\"primaryKey;size:36\" mapstructure:\"id\"R\x02id\x12D\n" +
+	"\x04name\x18\x02 \x01(\tB0\x8a\xb5\x18,gorm:\"size:255;not null\" mapstructure:\"name\"R\x04name\x12J\n" +
+	"\x05email\x18\x03 \x01(\tB4\x8a\xb5\x180gorm:\"uniqueIndex;size:255\" mapstructure:\"email\"R\x05email\x12j\n" +
+	"\rpassword_hash\x18\x04 \x01(\tBE\x8a\xb5\x18Agorm:\"column:password_hash;size:255\" mapstructure:\"password_hash\"R\fpasswordHash\x12G\n" +
+	"\x04role\x18\x05 \x01(\tB3\x8a\xb5\x18/gorm:\"default:user;size:32\" mapstructure:\"role\"R\x04role\x12R\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\x03B3\x8a\xb5\x18/gorm:\"autoCreateTime\" mapstructure:\"created_at\"R\tcreatedAt\x12R\n" +
+	"\n" +
+	"updated_at\x18\a \x01(\x03B3\x8a\xb5\x18/gorm:\"autoUpdateTime\" mapstructure:\"updated_at\"R\tupdatedAt\">\n" +
 	"\x11WatchUsersRequest\x12)\n" +
 	"\x10interval_seconds\x18\x01 \x01(\x05R\x0fintervalSeconds\"+\n" +
 	"\x13UploadUsersResponse\x12\x14\n" +
 	"\x05count\x18\x01 \x01(\x05R\x05count\"5\n" +
 	"\vChatMessage\x12\x12\n" +
 	"\x04user\x18\x01 \x01(\tR\x04user\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\"u\n" +
-	"\vStructNamed\x129\n" +
-	"\x04flag\x18\x01 \x01(\bB%\x8a\xb5\x18!xml:\"flag,attr\" gorm:\"primaryKey\"R\x04flag\x12+\n" +
-	"\x04name\x18\x02 \x01(\tB\x17\x8a\xb5\x18\x13mapstructure:\"name\"R\x04name\"^\n" +
-	"\vStructOneof\x12\x14\n" +
-	"\x04text\x18\x01 \x01(\tH\x00R\x04text\x12\x16\n" +
-	"\x05count\x18\x02 \x01(\x05H\x00R\x05countB!\n" +
-	"\apayload\x12\x16\x92\xb5\x18\x12xml:\"payload,attr\"2\xc7\b\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\"s\n" +
+	"\x0fRegisterRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\">\n" +
+	"\x10RegisterResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\"F\n" +
+	"\fLoginRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"N\n" +
+	"\rLoginResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12'\n" +
+	"\x04user\x18\x02 \x01(\v2\x13.acme.users.v1.UserR\x04user2\xa5\t\n" +
 	"\fUsersService\x12U\n" +
 	"\aGetUser\x12\x1d.acme.users.v1.GetUserRequest\x1a\x13.acme.users.v1.User\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12a\n" +
-	"\tListUsers\x12\x1f.acme.users.v1.ListUsersRequest\x1a .acme.users.v1.ListUsersResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12Y\n" +
+	"\tListUsers\x12\x1f.acme.users.v1.ListUsersRequest\x1a .acme.users.v1.ListUsersResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12\\\n" +
+	"\vGetUserByID\x12\x1d.acme.users.v1.GetUserRequest\x1a\x13.acme.users.v1.User\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/users/getByID\x12Y\n" +
 	"\n" +
 	"CreateUser\x12 .acme.users.v1.CreateUserRequest\x1a\x13.acme.users.v1.User\"\x14\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/users\x12^\n" +
 	"\n" +
@@ -864,7 +1061,10 @@ const file_users_v1_users_proto_rawDesc = "" +
 	"\n" +
 	"WatchUsers\x12 .acme.users.v1.WatchUsersRequest\x1a\x13.acme.users.v1.User\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/users:watch0\x01\x12e\n" +
 	"\vUploadUsers\x12\x13.acme.users.v1.User\x1a\".acme.users.v1.UploadUsersResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/users:upload(\x01\x12W\n" +
-	"\x04Chat\x12\x1a.acme.users.v1.ChatMessage\x1a\x1a.acme.users.v1.ChatMessage\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/v1/chat(\x010\x01B=Z;github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1b\x06proto3"
+	"\x04Chat\x12\x1a.acme.users.v1.ChatMessage\x1a\x1a.acme.users.v1.ChatMessage\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/v1/chat(\x010\x012\xd7\x01\n" +
+	"\vAuthService\x12i\n" +
+	"\bRegister\x12\x1e.acme.users.v1.RegisterRequest\x1a\x1f.acme.users.v1.RegisterResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/register\x12]\n" +
+	"\x05Login\x12\x1b.acme.users.v1.LoginRequest\x1a\x1c.acme.users.v1.LoginResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/auth/loginB=Z;github.com/aldok10/zara-rpc-examples/proto/users/v1;usersv1b\x06proto3"
 
 var (
 	file_users_v1_users_proto_rawDescOnce sync.Once
@@ -878,7 +1078,7 @@ func file_users_v1_users_proto_rawDescGZIP() []byte {
 	return file_users_v1_users_proto_rawDescData
 }
 
-var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_users_v1_users_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_users_v1_users_proto_goTypes = []any{
 	(*GetUserRequest)(nil),      // 0: acme.users.v1.GetUserRequest
 	(*ListUsersRequest)(nil),    // 1: acme.users.v1.ListUsersRequest
@@ -890,42 +1090,52 @@ var file_users_v1_users_proto_goTypes = []any{
 	(*EchoResponse)(nil),        // 7: acme.users.v1.EchoResponse
 	(*ActivateUserRequest)(nil), // 8: acme.users.v1.ActivateUserRequest
 	(*User)(nil),                // 9: acme.users.v1.User
-	(*WatchUsersRequest)(nil),   // 10: acme.users.v1.WatchUsersRequest
-	(*UploadUsersResponse)(nil), // 11: acme.users.v1.UploadUsersResponse
-	(*ChatMessage)(nil),         // 12: acme.users.v1.ChatMessage
-	(*StructNamed)(nil),         // 13: acme.users.v1.StructNamed
-	(*StructOneof)(nil),         // 14: acme.users.v1.StructOneof
-	(*emptypb.Empty)(nil),       // 15: google.protobuf.Empty
+	(*UserRow)(nil),             // 10: acme.users.v1.UserRow
+	(*WatchUsersRequest)(nil),   // 11: acme.users.v1.WatchUsersRequest
+	(*UploadUsersResponse)(nil), // 12: acme.users.v1.UploadUsersResponse
+	(*ChatMessage)(nil),         // 13: acme.users.v1.ChatMessage
+	(*RegisterRequest)(nil),     // 14: acme.users.v1.RegisterRequest
+	(*RegisterResponse)(nil),    // 15: acme.users.v1.RegisterResponse
+	(*LoginRequest)(nil),        // 16: acme.users.v1.LoginRequest
+	(*LoginResponse)(nil),       // 17: acme.users.v1.LoginResponse
+	(*emptypb.Empty)(nil),       // 18: google.protobuf.Empty
 }
 var file_users_v1_users_proto_depIdxs = []int32{
 	9,  // 0: acme.users.v1.ListUsersResponse.users:type_name -> acme.users.v1.User
-	0,  // 1: acme.users.v1.UsersService.GetUser:input_type -> acme.users.v1.GetUserRequest
-	1,  // 2: acme.users.v1.UsersService.ListUsers:input_type -> acme.users.v1.ListUsersRequest
-	3,  // 3: acme.users.v1.UsersService.CreateUser:input_type -> acme.users.v1.CreateUserRequest
-	4,  // 4: acme.users.v1.UsersService.UpdateUser:input_type -> acme.users.v1.UpdateUserRequest
-	5,  // 5: acme.users.v1.UsersService.DeleteUser:input_type -> acme.users.v1.DeleteUserRequest
-	6,  // 6: acme.users.v1.UsersService.Echo:input_type -> acme.users.v1.EchoRequest
-	0,  // 7: acme.users.v1.UsersService.GetUserProfile:input_type -> acme.users.v1.GetUserRequest
-	8,  // 8: acme.users.v1.UsersService.ActivateUser:input_type -> acme.users.v1.ActivateUserRequest
-	10, // 9: acme.users.v1.UsersService.WatchUsers:input_type -> acme.users.v1.WatchUsersRequest
-	9,  // 10: acme.users.v1.UsersService.UploadUsers:input_type -> acme.users.v1.User
-	12, // 11: acme.users.v1.UsersService.Chat:input_type -> acme.users.v1.ChatMessage
-	9,  // 12: acme.users.v1.UsersService.GetUser:output_type -> acme.users.v1.User
-	2,  // 13: acme.users.v1.UsersService.ListUsers:output_type -> acme.users.v1.ListUsersResponse
-	9,  // 14: acme.users.v1.UsersService.CreateUser:output_type -> acme.users.v1.User
-	9,  // 15: acme.users.v1.UsersService.UpdateUser:output_type -> acme.users.v1.User
-	15, // 16: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
-	7,  // 17: acme.users.v1.UsersService.Echo:output_type -> acme.users.v1.EchoResponse
-	9,  // 18: acme.users.v1.UsersService.GetUserProfile:output_type -> acme.users.v1.User
-	9,  // 19: acme.users.v1.UsersService.ActivateUser:output_type -> acme.users.v1.User
-	9,  // 20: acme.users.v1.UsersService.WatchUsers:output_type -> acme.users.v1.User
-	11, // 21: acme.users.v1.UsersService.UploadUsers:output_type -> acme.users.v1.UploadUsersResponse
-	12, // 22: acme.users.v1.UsersService.Chat:output_type -> acme.users.v1.ChatMessage
-	12, // [12:23] is the sub-list for method output_type
-	1,  // [1:12] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	9,  // 1: acme.users.v1.LoginResponse.user:type_name -> acme.users.v1.User
+	0,  // 2: acme.users.v1.UsersService.GetUser:input_type -> acme.users.v1.GetUserRequest
+	1,  // 3: acme.users.v1.UsersService.ListUsers:input_type -> acme.users.v1.ListUsersRequest
+	0,  // 4: acme.users.v1.UsersService.GetUserByID:input_type -> acme.users.v1.GetUserRequest
+	3,  // 5: acme.users.v1.UsersService.CreateUser:input_type -> acme.users.v1.CreateUserRequest
+	4,  // 6: acme.users.v1.UsersService.UpdateUser:input_type -> acme.users.v1.UpdateUserRequest
+	5,  // 7: acme.users.v1.UsersService.DeleteUser:input_type -> acme.users.v1.DeleteUserRequest
+	6,  // 8: acme.users.v1.UsersService.Echo:input_type -> acme.users.v1.EchoRequest
+	0,  // 9: acme.users.v1.UsersService.GetUserProfile:input_type -> acme.users.v1.GetUserRequest
+	8,  // 10: acme.users.v1.UsersService.ActivateUser:input_type -> acme.users.v1.ActivateUserRequest
+	11, // 11: acme.users.v1.UsersService.WatchUsers:input_type -> acme.users.v1.WatchUsersRequest
+	9,  // 12: acme.users.v1.UsersService.UploadUsers:input_type -> acme.users.v1.User
+	13, // 13: acme.users.v1.UsersService.Chat:input_type -> acme.users.v1.ChatMessage
+	14, // 14: acme.users.v1.AuthService.Register:input_type -> acme.users.v1.RegisterRequest
+	16, // 15: acme.users.v1.AuthService.Login:input_type -> acme.users.v1.LoginRequest
+	9,  // 16: acme.users.v1.UsersService.GetUser:output_type -> acme.users.v1.User
+	2,  // 17: acme.users.v1.UsersService.ListUsers:output_type -> acme.users.v1.ListUsersResponse
+	9,  // 18: acme.users.v1.UsersService.GetUserByID:output_type -> acme.users.v1.User
+	9,  // 19: acme.users.v1.UsersService.CreateUser:output_type -> acme.users.v1.User
+	9,  // 20: acme.users.v1.UsersService.UpdateUser:output_type -> acme.users.v1.User
+	18, // 21: acme.users.v1.UsersService.DeleteUser:output_type -> google.protobuf.Empty
+	7,  // 22: acme.users.v1.UsersService.Echo:output_type -> acme.users.v1.EchoResponse
+	9,  // 23: acme.users.v1.UsersService.GetUserProfile:output_type -> acme.users.v1.User
+	9,  // 24: acme.users.v1.UsersService.ActivateUser:output_type -> acme.users.v1.User
+	9,  // 25: acme.users.v1.UsersService.WatchUsers:output_type -> acme.users.v1.User
+	12, // 26: acme.users.v1.UsersService.UploadUsers:output_type -> acme.users.v1.UploadUsersResponse
+	13, // 27: acme.users.v1.UsersService.Chat:output_type -> acme.users.v1.ChatMessage
+	15, // 28: acme.users.v1.AuthService.Register:output_type -> acme.users.v1.RegisterResponse
+	17, // 29: acme.users.v1.AuthService.Login:output_type -> acme.users.v1.LoginResponse
+	16, // [16:30] is the sub-list for method output_type
+	2,  // [2:16] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_users_v1_users_proto_init() }
@@ -933,19 +1143,15 @@ func file_users_v1_users_proto_init() {
 	if File_users_v1_users_proto != nil {
 		return
 	}
-	file_users_v1_users_proto_msgTypes[14].OneofWrappers = []any{
-		(*StructOneof_Text)(nil),
-		(*StructOneof_Count)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_users_v1_users_proto_rawDesc), len(file_users_v1_users_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_users_v1_users_proto_goTypes,
 		DependencyIndexes: file_users_v1_users_proto_depIdxs,

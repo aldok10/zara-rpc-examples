@@ -19,37 +19,47 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-
+	todosv1 "github.com/aldok10/zara-rpc-examples/proto/todos/v1"
 	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
 	"github.com/aldok10/zara-rpc/client"
+	"github.com/aldok10/zara-rpc/codes"
 	"github.com/aldok10/zara-rpc/encoding"
 	"github.com/aldok10/zara-rpc/metadata"
+	"github.com/aldok10/zara-rpc/status"
 )
 
-// demoSecret matches the server's JWT signing secret (examples/server).
-const demoSecret = "secret-token-123"
+// demoTokens holds bearer tokens for the demo roles. The server signs JWTs
+// with a random secret per process (examples/server getOrGenerateSecret), so
+// tokens cannot be minted locally: they come from the auth service itself
+// (register + login).
+var demoTokens struct{ admin, user string }
 
-// mintToken signs a demo HS256 JWT with the given role claim. The server
-// validates it with auth.NewJWTValidator and enforces the RBAC policy on
-// the role.
-func mintToken(role string) string {
-	claims := jwt.MapClaims{
-		"sub":  "users/1",
-		"role": role,
-		"exp":  time.Now().Add(time.Hour).Unix(),
+// loginRole registers username (tolerating "already exists" from previous
+// runs) and logs in, returning the issued JWT.
+func loginRole(ctx context.Context, auth usersv1.AuthServiceHTTPClient, username, role string) string {
+	const password = "demo-password"
+	_, err := auth.Register(ctx, &usersv1.RegisterRequest{
+		Username: username, Password: password, Email: username + "@example.com", Role: role,
+	})
+	if err != nil && status.Code(err) != codes.CodeAlreadyExists {
+		log.Fatalf("register %s: %v", username, err)
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := token.SignedString([]byte(demoSecret))
+	resp, err := auth.Login(ctx, &usersv1.LoginRequest{Username: username, Password: password})
 	if err != nil {
-		log.Fatalf("mint token: %v", err)
+		log.Fatalf("login %s: %v", username, err)
 	}
-	return signed
+	return resp.Token
 }
 
-// bearer returns an Authorization header value for a role.
+// bearer returns an Authorization header value for a role ("admin" or
+// "user"), minted through the auth service at startup.
 func bearer(role string) string {
-	return "Bearer " + mintToken(role)
+	switch role {
+	case "admin":
+		return "Bearer " + demoTokens.admin
+	default:
+		return "Bearer " + demoTokens.user
+	}
 }
 
 func main() {
@@ -57,6 +67,16 @@ func main() {
 	defer cancel()
 
 	baseURL := "http://localhost:8080"
+
+	// ---- Obtain role tokens through the auth service ----
+	// The server's signing secret is random per process, so the demo cannot
+	// forge JWTs locally; it registers two demo users (admin + reader) and
+	// logs in for real tokens. Re-runs against a persistent DB tolerate the
+	// 409 already-exists.
+	auth := usersv1.NewAuthServiceHTTPClient(baseURL)
+	demoTokens.admin = loginRole(ctx, auth, "demo-admin", "admin")
+	demoTokens.user = loginRole(ctx, auth, "demo-reader", "user")
+	fmt.Println("== Auth ==\nTokens    -> obtained via register + login (admin, reader)")
 
 	// ---- JSON client (default codec) ----
 	jsonClient := usersv1.NewUsersServiceHTTPClient(baseURL)
@@ -67,6 +87,10 @@ func main() {
 	protoClient := usersv1.NewUsersServiceHTTPClient(baseURL, client.WithCodec(encoding.ProtoCodec{}))
 	fmt.Println("== Protobuf client ==")
 	runUnary(ctx, baseURL, protoClient)
+
+	// ---- Todos (GORM + SQLite) ----
+	fmt.Println("== Todos (GORM + SQLite) ==")
+	runTodos(ctx, baseURL)
 
 	// ---- Streaming over JSON ----
 	fmt.Println("== Streaming (JSON) ==")
@@ -140,9 +164,20 @@ func runUnary(ctx context.Context, baseURL string, c usersv1.UsersServiceHTTPCli
 		fmt.Printf("GetUser (no auth) -> unexpected success\n")
 	}
 
+	// GetUserByID exercises automatic query binding: the request has no path
+	// params and no body, so the id field binds from the query string
+	// (GET /v1/users/getByID?id=...).
+	byID, err := c.GetUserByID(ctx, &usersv1.GetUserRequest{Id: created.Id},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("user")),
+	)
+	if err != nil {
+		log.Fatalf("GetUserByID: %v", err)
+	}
+	fmt.Printf("GetUserByID -> id=%s name=%s (query binding, reader token)\n", byID.Id, byID.Name)
+
 	// ActivateUser via the custom verb route POST /v1/users/{name}:activate
 	// — admin only (not in the readers allow rule).
-	activated, err := c.ActivateUser(ctx, &usersv1.ActivateUserRequest{Name: created.Id},
+	activated, err := c.ActivateUser(ctx, &usersv1.ActivateUserRequest{Name: created.Name},
 		client.WithHeader(metadata.HeaderAuthorization, bearer("admin")),
 	)
 	if err != nil {
@@ -198,6 +233,44 @@ func runUnary(ctx context.Context, baseURL string, c usersv1.UsersServiceHTTPCli
 	fmt.Printf("Echo        -> %q (reader token)\n", echo.Message)
 }
 
+// runTodos exercises the TodoService (GORM + SQLite) with the typed
+// client: create → list → mark done → delete. The user role is allowed by
+// the RBAC policy (todo-users allow rule).
+func runTodos(ctx context.Context, baseURL string) {
+	c := todosv1.NewTodoServiceHTTPClient(baseURL)
+
+	created, err := c.CreateTodo(ctx, &todosv1.CreateTodoRequest{Title: "buy milk"},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("user")),
+	)
+	if err != nil {
+		log.Fatalf("CreateTodo: %v", err)
+	}
+	fmt.Printf("CreateTodo  -> id=%s title=%q owner=%s done=%v (user token)\n", created.Id, created.Title, created.OwnerId, created.Done)
+
+	listed, err := c.ListTodos(ctx, &todosv1.ListTodosRequest{},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("user")),
+	)
+	if err != nil {
+		log.Fatalf("ListTodos: %v", err)
+	}
+	fmt.Printf("ListTodos   -> %d todo(s)\n", len(listed.Todos))
+
+	updated, err := c.UpdateTodo(ctx, &todosv1.UpdateTodoRequest{Id: created.Id, Done: true},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("user")),
+	)
+	if err != nil {
+		log.Fatalf("UpdateTodo: %v", err)
+	}
+	fmt.Printf("UpdateTodo  -> id=%s done=%v (user token)\n", updated.Id, updated.Done)
+
+	if _, err := c.DeleteTodo(ctx, &todosv1.DeleteTodoRequest{Id: created.Id},
+		client.WithHeader(metadata.HeaderAuthorization, bearer("user")),
+	); err != nil {
+		log.Fatalf("DeleteTodo: %v", err)
+	}
+	fmt.Println("DeleteTodo  -> deleted (user token)")
+}
+
 func runStreaming(ctx context.Context, c usersv1.UsersServiceHTTPClient) {
 	// Seed a user so WatchUsers has events to stream (it only streams
 	// existing users; the unary demo deleted its own).
@@ -233,8 +306,8 @@ func runStreaming(ctx context.Context, c usersv1.UsersServiceHTTPClient) {
 	if err != nil {
 		log.Fatalf("UploadUsers: %v", err)
 	}
-	for _, name := range []string{"Stream A", "Stream B", "Stream C"} {
-		if err := up.Send(&usersv1.User{Name: name}); err != nil {
+	for i, name := range []string{"Stream A", "Stream B", "Stream C"} {
+		if err := up.Send(&usersv1.User{Name: name, Email: fmt.Sprintf("stream-%d@example.com", i+1)}); err != nil {
 			log.Fatalf("UploadUsers send: %v", err)
 		}
 	}

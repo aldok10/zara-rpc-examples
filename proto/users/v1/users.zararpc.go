@@ -11,19 +11,21 @@ import (
 	client "github.com/aldok10/zara-rpc/client"
 	codes "github.com/aldok10/zara-rpc/codes"
 	encoding "github.com/aldok10/zara-rpc/encoding"
+	kernel "github.com/aldok10/zara-rpc/kernel"
 	peer "github.com/aldok10/zara-rpc/peer"
+	routing "github.com/aldok10/zara-rpc/routing"
 	runtime "github.com/aldok10/zara-rpc/runtime"
 	status "github.com/aldok10/zara-rpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	reflect "reflect"
-	strconv "strconv"
 )
 
 // UsersServiceHandler is the server implementation contract.
 type UsersServiceHandler interface {
 	GetUser(runtime.Ctx, *GetUserRequest) (*User, error)
 	ListUsers(runtime.Ctx, *ListUsersRequest) (*ListUsersResponse, error)
+	GetUserByID(runtime.Ctx, *GetUserRequest) (*User, error)
 	CreateUser(runtime.Ctx, *CreateUserRequest) (*User, error)
 	UpdateUser(runtime.Ctx, *UpdateUserRequest) (*User, error)
 	DeleteUser(runtime.Ctx, *DeleteUserRequest) (*emptypb.Empty, error)
@@ -44,6 +46,10 @@ func (UnimplementedUsersServiceHandler) GetUser(runtime.Ctx, *GetUserRequest) (*
 
 func (UnimplementedUsersServiceHandler) ListUsers(runtime.Ctx, *ListUsersRequest) (*ListUsersResponse, error) {
 	return nil, status.NewErrorf(codes.CodeUnimplemented, "method ListUsers not implemented")
+}
+
+func (UnimplementedUsersServiceHandler) GetUserByID(runtime.Ctx, *GetUserRequest) (*User, error) {
+	return nil, status.NewErrorf(codes.CodeUnimplemented, "method GetUserByID not implemented")
 }
 
 func (UnimplementedUsersServiceHandler) CreateUser(runtime.Ctx, *CreateUserRequest) (*User, error) {
@@ -91,6 +97,11 @@ func request_UsersService_GetUser_0(ctx runtime.Ctx, r *http.Request, params map
 		msg.Id = v
 	}
 
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
+		return nil, err
+	}
+
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
@@ -98,16 +109,21 @@ func request_UsersService_ListUsers_0(ctx runtime.Ctx, r *http.Request, params m
 	msg := &ListUsersRequest{}
 	meta := ctx.Meta()
 
-	// Query parameters (type-safe, no reflection).
-	if vs := meta.Query["pageSize"]; len(vs) > 0 {
-		n, err := strconv.ParseInt(vs[len(vs)-1], 10, 32)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "parse query parameter pageSize: %v", err)
-		}
-		msg.PageSize = int32(n)
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
+		return nil, err
 	}
-	if vs := meta.Query["pageToken"]; len(vs) > 0 {
-		msg.PageToken = vs[len(vs)-1]
+
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+}
+
+func request_UsersService_GetUserByID_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+	msg := &GetUserRequest{}
+	meta := ctx.Meta()
+
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
+		return nil, err
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -129,14 +145,14 @@ func request_UsersService_UpdateUser_0(ctx runtime.Ctx, r *http.Request, params 
 	msg := &UpdateUserRequest{}
 	meta := ctx.Meta()
 
-	// Path parameters.
-	if v, ok := params["id"]; ok {
-		msg.Id = v
-	}
-
 	// Body: entire request message (buffered by the mux).
 	if err := codec.Unmarshal(meta.Body, msg); err != nil {
 		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
+	}
+
+	// Path parameters.
+	if v, ok := params["id"]; ok {
+		msg.Id = v
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -149,6 +165,11 @@ func request_UsersService_DeleteUser_0(ctx runtime.Ctx, r *http.Request, params 
 	// Path parameters.
 	if v, ok := params["id"]; ok {
 		msg.Id = v
+	}
+
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
+		return nil, err
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -175,6 +196,11 @@ func request_UsersService_Echo_1(ctx runtime.Ctx, r *http.Request, params map[st
 		msg.Message = v
 	}
 
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query, "message"); err != nil {
+		return nil, err
+	}
+
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
@@ -185,6 +211,11 @@ func request_UsersService_GetUserProfile_0(ctx runtime.Ctx, r *http.Request, par
 	// Path parameters.
 	if v, ok := params["id"]; ok {
 		msg.Id = v
+	}
+
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query, "id"); err != nil {
+		return nil, err
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -199,6 +230,11 @@ func request_UsersService_ActivateUser_0(ctx runtime.Ctx, r *http.Request, param
 		msg.Name = v
 	}
 
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query, "name"); err != nil {
+		return nil, err
+	}
+
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
 }
 
@@ -206,13 +242,9 @@ func request_UsersService_WatchUsers_0(ctx runtime.Ctx, r *http.Request, params 
 	msg := &WatchUsersRequest{}
 	meta := ctx.Meta()
 
-	// Query parameters (type-safe, no reflection).
-	if vs := meta.Query["intervalSeconds"]; len(vs) > 0 {
-		n, err := strconv.ParseInt(vs[len(vs)-1], 10, 32)
-		if err != nil {
-			return nil, status.NewErrorf(codes.CodeInvalidArgument, "parse query parameter intervalSeconds: %v", err)
-		}
-		msg.IntervalSeconds = int32(n)
+	// Query parameters (fields not bound by path or body).
+	if err := runtime.PopulateQuery(msg, meta.Query); err != nil {
+		return nil, err
 	}
 
 	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
@@ -249,6 +281,8 @@ const (
 	UsersService_GetUser_Path          = "/v1/users/{id}"
 	UsersService_ListUsers_Method      = "ListUsers"
 	UsersService_ListUsers_Path        = "/v1/users"
+	UsersService_GetUserByID_Method    = "GetUserByID"
+	UsersService_GetUserByID_Path      = "/v1/users/getByID"
 	UsersService_CreateUser_Method     = "CreateUser"
 	UsersService_CreateUser_Path       = "/v1/users"
 	UsersService_UpdateUser_Method     = "UpdateUser"
@@ -271,9 +305,9 @@ const (
 )
 
 // Register_GetUser builds the GetUser endpoint.
-func Register_GetUser(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[GetUserRequest, User])(&op).
+func Register_GetUser(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[GetUserRequest, User])(&op).
 		SetMethod(http.MethodGet).
 		SetPath(UsersService_GetUser_Path).
 		SetRPC(UsersService_GetUser_Method).
@@ -289,9 +323,9 @@ func Register_GetUser(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_ListUsers builds the ListUsers endpoint.
-func Register_ListUsers(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[ListUsersRequest, ListUsersResponse])(&op).
+func Register_ListUsers(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[ListUsersRequest, ListUsersResponse])(&op).
 		SetMethod(http.MethodGet).
 		SetPath(UsersService_ListUsers_Path).
 		SetRPC(UsersService_ListUsers_Method).
@@ -306,10 +340,28 @@ func Register_ListUsers(svc UsersServiceHandler) *runtime.Operation {
 		Build()
 }
 
+// Register_GetUserByID builds the GetUserByID endpoint.
+func Register_GetUserByID(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[GetUserRequest, User])(&op).
+		SetMethod(http.MethodGet).
+		SetPath(UsersService_GetUserByID_Path).
+		SetRPC(UsersService_GetUserByID_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[GetUserRequest]) (*runtime.Response[User], error) {
+			resp, err := svc.GetUserByID(ctx, req.Msg())
+			if err != nil {
+				return nil, err
+			}
+			return runtime.NewResponse(resp), nil
+		}).
+		SetRequestBuilder(request_UsersService_GetUserByID_0).
+		Build()
+}
+
 // Register_CreateUser builds the CreateUser endpoint.
-func Register_CreateUser(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[CreateUserRequest, User])(&op).
+func Register_CreateUser(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[CreateUserRequest, User])(&op).
 		SetMethod(http.MethodPost).
 		SetPath(UsersService_CreateUser_Path).
 		SetRPC(UsersService_CreateUser_Method).
@@ -326,9 +378,9 @@ func Register_CreateUser(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_UpdateUser builds the UpdateUser endpoint.
-func Register_UpdateUser(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[UpdateUserRequest, User])(&op).
+func Register_UpdateUser(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[UpdateUserRequest, User])(&op).
 		SetMethod(http.MethodPut).
 		SetPath(UsersService_UpdateUser_Path).
 		SetRPC(UsersService_UpdateUser_Method).
@@ -345,9 +397,9 @@ func Register_UpdateUser(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_DeleteUser builds the DeleteUser endpoint.
-func Register_DeleteUser(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[DeleteUserRequest, emptypb.Empty])(&op).
+func Register_DeleteUser(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[DeleteUserRequest, emptypb.Empty])(&op).
 		SetMethod(http.MethodDelete).
 		SetPath(UsersService_DeleteUser_Path).
 		SetRPC(UsersService_DeleteUser_Method).
@@ -363,9 +415,9 @@ func Register_DeleteUser(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_Echo builds the Echo endpoint.
-func Register_Echo(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[EchoRequest, EchoResponse])(&op).
+func Register_Echo(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[EchoRequest, EchoResponse])(&op).
 		SetMethod(http.MethodPost).
 		SetPath(UsersService_Echo_Path).
 		SetRPC(UsersService_Echo_Method).
@@ -382,9 +434,9 @@ func Register_Echo(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_Echo_1 builds the Echo endpoint.
-func Register_Echo_1(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[EchoRequest, EchoResponse])(&op).
+func Register_Echo_1(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[EchoRequest, EchoResponse])(&op).
 		SetMethod(http.MethodGet).
 		SetPath(UsersService_Echo_Path_1).
 		SetRPC(UsersService_Echo_Method).
@@ -400,9 +452,9 @@ func Register_Echo_1(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_GetUserProfile builds the GetUserProfile endpoint.
-func Register_GetUserProfile(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[GetUserRequest, User])(&op).
+func Register_GetUserProfile(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[GetUserRequest, User])(&op).
 		SetMethod(http.MethodGet).
 		SetPath(UsersService_GetUserProfile_Path).
 		SetRPC(UsersService_GetUserProfile_Method).
@@ -419,9 +471,9 @@ func Register_GetUserProfile(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_ActivateUser builds the ActivateUser endpoint.
-func Register_ActivateUser(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[ActivateUserRequest, User])(&op).
+func Register_ActivateUser(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[ActivateUserRequest, User])(&op).
 		SetMethod(http.MethodPost).
 		SetPath(UsersService_ActivateUser_Path).
 		SetRPC(UsersService_ActivateUser_Method).
@@ -437,9 +489,9 @@ func Register_ActivateUser(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_WatchUsers builds the WatchUsers endpoint.
-func Register_WatchUsers(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[WatchUsersRequest, *User])(&op).
+func Register_WatchUsers(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[WatchUsersRequest, *User])(&op).
 		SetMethod(http.MethodGet).
 		SetPath(UsersService_WatchUsers_Path).
 		SetRPC(UsersService_WatchUsers_Method).
@@ -451,9 +503,9 @@ func Register_WatchUsers(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_UploadUsers builds the UploadUsers endpoint.
-func Register_UploadUsers(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[*User, UploadUsersResponse])(&op).
+func Register_UploadUsers(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[*User, UploadUsersResponse])(&op).
 		SetMethod(http.MethodPost).
 		SetPath(UsersService_UploadUsers_Path).
 		SetRPC(UsersService_UploadUsers_Method).
@@ -468,9 +520,9 @@ func Register_UploadUsers(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // Register_Chat builds the Chat endpoint.
-func Register_Chat(svc UsersServiceHandler) *runtime.Operation {
-	var op runtime.Operation
-	return (*runtime.OperationBuilder[*ChatMessage, *ChatMessage])(&op).
+func Register_Chat(svc UsersServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[*ChatMessage, *ChatMessage])(&op).
 		SetMethod(http.MethodPost).
 		SetPath(UsersService_Chat_Path).
 		SetRPC(UsersService_Chat_Method).
@@ -482,26 +534,52 @@ func Register_Chat(svc UsersServiceHandler) *runtime.Operation {
 }
 
 // RegisterUsersServiceRoutes registers all HTTP endpoints of the service on the mux.
-func RegisterUsersServiceRoutes(mux *runtime.Mux, svc UsersServiceHandler) error {
-	return mux.Register(runtime.NewService(UsersService_FullName).
-		Add(Register_GetUser(svc)).
-		Add(Register_ListUsers(svc)).
-		Add(Register_CreateUser(svc)).
-		Add(Register_UpdateUser(svc)).
-		Add(Register_DeleteUser(svc)).
-		Add(Register_Echo(svc)).
-		Add(Register_Echo_1(svc)).
-		Add(Register_GetUserProfile(svc)).
-		Add(Register_ActivateUser(svc)).
-		Add(Register_WatchUsers(svc)).
-		Add(Register_UploadUsers(svc)).
-		Add(Register_Chat(svc)))
+func RegisterUsersServiceRoutes(mux *routing.Mux, svc UsersServiceHandler) error {
+	return mux.Register(
+		kernel.NewService(
+			UsersService_FullName,
+			Register_GetUser(svc),
+			Register_ListUsers(svc),
+			Register_GetUserByID(svc),
+			Register_CreateUser(svc),
+			Register_UpdateUser(svc),
+			Register_DeleteUser(svc),
+			Register_Echo(svc),
+			Register_Echo_1(svc),
+			Register_GetUserProfile(svc),
+			Register_ActivateUser(svc),
+			Register_WatchUsers(svc),
+			Register_UploadUsers(svc),
+			Register_Chat(svc),
+		))
+}
+
+// RegisterUsersServiceHandler registers the service on target (routing.Server, routing.Mux, or gRPC registrar).
+func RegisterUsersServiceHandler(target any, svc UsersServiceHandler) error {
+	if reg, ok := target.(interface {
+		Mux() *routing.Mux
+		GRPC() any
+	}); ok {
+		if err := RegisterUsersServiceRoutes(reg.Mux(), svc); err != nil {
+			return err
+		}
+		if g := reg.GRPC(); g != nil {
+			RegisterUsersServiceServer(g, svc)
+		}
+		return nil
+	}
+	if mux, ok := target.(*routing.Mux); ok {
+		return RegisterUsersServiceRoutes(mux, svc)
+	}
+	RegisterUsersServiceServer(target, svc)
+	return nil
 }
 
 // UsersServiceHTTPClient is a typed HTTP client for UsersService.
 type UsersServiceHTTPClient interface {
 	GetUser(context.Context, *GetUserRequest, ...client.ClientOption) (*User, error)
 	ListUsers(context.Context, *ListUsersRequest, ...client.ClientOption) (*ListUsersResponse, error)
+	GetUserByID(context.Context, *GetUserRequest, ...client.ClientOption) (*User, error)
 	CreateUser(context.Context, *CreateUserRequest, ...client.ClientOption) (*User, error)
 	UpdateUser(context.Context, *UpdateUserRequest, ...client.ClientOption) (*User, error)
 	DeleteUser(context.Context, *DeleteUserRequest, ...client.ClientOption) (*emptypb.Empty, error)
@@ -537,6 +615,15 @@ func (c *usersServiceHTTPClient) GetUser(ctx context.Context, req *GetUserReques
 func (c *usersServiceHTTPClient) ListUsers(ctx context.Context, req *ListUsersRequest, extraOpts ...client.ClientOption) (*ListUsersResponse, error) {
 	resp := &ListUsersResponse{}
 	err := c.DoUnary(ctx, http.MethodGet, UsersService_ListUsers_Path, "", req, resp, extraOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *usersServiceHTTPClient) GetUserByID(ctx context.Context, req *GetUserRequest, extraOpts ...client.ClientOption) (*User, error) {
+	resp := &User{}
+	err := c.DoUnary(ctx, http.MethodGet, UsersService_GetUserByID_Path, "", req, resp, extraOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -622,5 +709,164 @@ func (c *usersServiceHTTPClient) Chat(ctx context.Context, extraOpts ...client.C
 }
 
 func (c *usersServiceHTTPClient) Close() error {
+	return nil
+}
+
+// AuthServiceHandler is the server implementation contract.
+type AuthServiceHandler interface {
+	Register(runtime.Ctx, *RegisterRequest) (*RegisterResponse, error)
+	Login(runtime.Ctx, *LoginRequest) (*LoginResponse, error)
+}
+
+// UnimplementedAuthServiceHandler returns CodeUnimplemented for every method.
+type UnimplementedAuthServiceHandler struct{}
+
+func (UnimplementedAuthServiceHandler) Register(runtime.Ctx, *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.NewErrorf(codes.CodeUnimplemented, "method Register not implemented")
+}
+
+func (UnimplementedAuthServiceHandler) Login(runtime.Ctx, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.NewErrorf(codes.CodeUnimplemented, "method Login not implemented")
+}
+
+func request_AuthService_Register_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+	msg := &RegisterRequest{}
+	meta := ctx.Meta()
+
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
+		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
+	}
+
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+}
+
+func request_AuthService_Login_0(ctx runtime.Ctx, r *http.Request, params map[string]string, spec runtime.Spec, codec encoding.Codec) (runtime.AnyRequest, error) {
+	msg := &LoginRequest{}
+	meta := ctx.Meta()
+
+	// Body: entire request message (buffered by the mux).
+	if err := codec.Unmarshal(meta.Body, msg); err != nil {
+		return nil, status.NewErrorf(codes.CodeInvalidArgument, "decode request body: %v", err)
+	}
+
+	return runtime.NewRequestWithMeta(msg, meta.Header, spec, peer.Peer{Addr: r.RemoteAddr, Protocol: r.Proto}), nil
+}
+
+// Service and endpoint constants.
+const (
+	AuthService_FullName        = "acme.users.v1.AuthService"
+	AuthService_Register_Method = "Register"
+	AuthService_Register_Path   = "/v1/auth/register"
+	AuthService_Login_Method    = "Login"
+	AuthService_Login_Path      = "/v1/auth/login"
+)
+
+// Register_Register builds the Register endpoint.
+func Register_Register(svc AuthServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[RegisterRequest, RegisterResponse])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(AuthService_Register_Path).
+		SetRPC(AuthService_Register_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[RegisterRequest]) (*runtime.Response[RegisterResponse], error) {
+			resp, err := svc.Register(ctx, req.Msg())
+			if err != nil {
+				return nil, err
+			}
+			return runtime.NewResponse(resp), nil
+		}).
+		SetBody("*").
+		SetRequestBuilder(request_AuthService_Register_0).
+		Build()
+}
+
+// Register_Login builds the Login endpoint.
+func Register_Login(svc AuthServiceHandler) *kernel.Operation {
+	var op kernel.Operation
+	return (*kernel.OperationBuilder[LoginRequest, LoginResponse])(&op).
+		SetMethod(http.MethodPost).
+		SetPath(AuthService_Login_Path).
+		SetRPC(AuthService_Login_Method).
+		SetUnaryHandler(func(ctx runtime.Ctx, req *runtime.Request[LoginRequest]) (*runtime.Response[LoginResponse], error) {
+			resp, err := svc.Login(ctx, req.Msg())
+			if err != nil {
+				return nil, err
+			}
+			return runtime.NewResponse(resp), nil
+		}).
+		SetBody("*").
+		SetRequestBuilder(request_AuthService_Login_0).
+		Build()
+}
+
+// RegisterAuthServiceRoutes registers all HTTP endpoints of the service on the mux.
+func RegisterAuthServiceRoutes(mux *routing.Mux, svc AuthServiceHandler) error {
+	return mux.Register(
+		kernel.NewService(
+			AuthService_FullName,
+			Register_Register(svc),
+			Register_Login(svc),
+		))
+}
+
+// RegisterAuthServiceHandler registers the service on target (routing.Server, routing.Mux, or gRPC registrar).
+func RegisterAuthServiceHandler(target any, svc AuthServiceHandler) error {
+	if reg, ok := target.(interface {
+		Mux() *routing.Mux
+		GRPC() any
+	}); ok {
+		if err := RegisterAuthServiceRoutes(reg.Mux(), svc); err != nil {
+			return err
+		}
+		if g := reg.GRPC(); g != nil {
+			RegisterAuthServiceServer(g, svc)
+		}
+		return nil
+	}
+	if mux, ok := target.(*routing.Mux); ok {
+		return RegisterAuthServiceRoutes(mux, svc)
+	}
+	RegisterAuthServiceServer(target, svc)
+	return nil
+}
+
+// AuthServiceHTTPClient is a typed HTTP client for AuthService.
+type AuthServiceHTTPClient interface {
+	Register(context.Context, *RegisterRequest, ...client.ClientOption) (*RegisterResponse, error)
+	Login(context.Context, *LoginRequest, ...client.ClientOption) (*LoginResponse, error)
+
+	// Close releases any resources held by the client.
+	Close() error
+}
+
+type authServiceHTTPClient struct {
+	client.ClientBase
+}
+
+// NewAuthServiceHTTPClient creates a new AuthServiceHTTPClient that calls the given base URL.
+func NewAuthServiceHTTPClient(baseURL string, opts ...client.ClientOption) AuthServiceHTTPClient {
+	return &authServiceHTTPClient{ClientBase: client.NewClientBase(baseURL, opts...)}
+}
+
+func (c *authServiceHTTPClient) Register(ctx context.Context, req *RegisterRequest, extraOpts ...client.ClientOption) (*RegisterResponse, error) {
+	resp := &RegisterResponse{}
+	err := c.DoUnary(ctx, http.MethodPost, AuthService_Register_Path, "*", req, resp, extraOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *authServiceHTTPClient) Login(ctx context.Context, req *LoginRequest, extraOpts ...client.ClientOption) (*LoginResponse, error) {
+	resp := &LoginResponse{}
+	err := c.DoUnary(ctx, http.MethodPost, AuthService_Login_Path, "*", req, resp, extraOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (c *authServiceHTTPClient) Close() error {
 	return nil
 }

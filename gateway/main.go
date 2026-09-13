@@ -10,6 +10,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -17,7 +18,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	usersv1 "github.com/aldok10/zara-rpc-examples/proto/users/v1"
-	"github.com/aldok10/zara-rpc/runtime"
+	"github.com/aldok10/zara-rpc/metadata"
+	"github.com/aldok10/zara-rpc/routing"
 )
 
 func main() {
@@ -28,15 +30,30 @@ func main() {
 	defer conn.Close()
 
 	// Register REST routes that proxy every call to the gRPC server.
-	mux := runtime.NewMux()
+	mux := routing.NewMux()
 	if err := usersv1.RegisterUsersServiceGateway(mux, conn); err != nil {
 		log.Fatalf("register gateway: %v", err)
 	}
 
+	// Forward the client's grpc-timeout to the upstream gRPC call as a
+	// context deadline. grpc-timeout is hop-by-hop (filtered from the
+	// forwarded metadata), so the deadline must travel via the context.
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		if v := r.Header.Get(metadata.HeaderGrpcTimeout); v != "" {
+			if d, ok := metadata.ParseGrpcTimeout(v); ok {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, d)
+				defer cancel()
+			}
+		}
+		mux.ServeHTTP(w, r.WithContext(ctx))
+	})
+
 	addr := "localhost:8081"
 	log.Printf("REST gateway listening on http://%s (proxying gRPC -> localhost:8080)", addr)
 	log.Printf("  curl http://%s/v1/users", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatal(err)
 	}
 }

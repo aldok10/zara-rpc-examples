@@ -8,6 +8,7 @@ package usersv1
 
 import (
 	metadata "github.com/aldok10/zara-rpc/metadata"
+	routing "github.com/aldok10/zara-rpc/routing"
 	runtime "github.com/aldok10/zara-rpc/runtime"
 	status "github.com/aldok10/zara-rpc/status"
 	grpc "google.golang.org/grpc"
@@ -41,6 +42,18 @@ func (g *gatewayUsersService) ListUsers(ctx runtime.Ctx, req *ListUsersRequest) 
 		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
 	}
 	resp, err := g.client.ListUsers(gctx, req)
+	if err != nil {
+		return nil, status.FromGRPCStatus(err)
+	}
+	return resp, nil
+}
+
+func (g *gatewayUsersService) GetUserByID(ctx runtime.Ctx, req *GetUserRequest) (*User, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
+	}
+	resp, err := g.client.GetUserByID(gctx, req)
 	if err != nil {
 		return nil, status.FromGRPCStatus(err)
 	}
@@ -226,7 +239,45 @@ func (g *gatewayUsersService) Chat(ctx runtime.Ctx, stream runtime.BidiStream[*C
 
 // RegisterUsersServiceGateway registers REST routes on mux that proxy
 // every call to the gRPC server reachable through conn.
-func RegisterUsersServiceGateway(mux *runtime.Mux, conn *grpc.ClientConn) error {
+func RegisterUsersServiceGateway(mux *routing.Mux, conn *grpc.ClientConn) error {
 	svc := &gatewayUsersService{client: NewUsersServiceClient(conn)}
 	return RegisterUsersServiceRoutes(mux, svc)
+}
+
+// gatewayAuthService adapts the grpc-go client to the zararpc HTTP handler
+// contract. It is used by RegisterAuthServiceGateway.
+type gatewayAuthService struct {
+	UnimplementedAuthServiceHandler
+	client AuthServiceClient
+}
+
+func (g *gatewayAuthService) Register(ctx runtime.Ctx, req *RegisterRequest) (*RegisterResponse, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
+	}
+	resp, err := g.client.Register(gctx, req)
+	if err != nil {
+		return nil, status.FromGRPCStatus(err)
+	}
+	return resp, nil
+}
+
+func (g *gatewayAuthService) Login(ctx runtime.Ctx, req *LoginRequest) (*LoginResponse, error) {
+	gctx := ctx.Context()
+	if pairs := metadata.HeaderPairsFromMeta(ctx.Meta()); len(pairs) > 0 {
+		gctx = metadata1.AppendToOutgoingContext(gctx, pairs...)
+	}
+	resp, err := g.client.Login(gctx, req)
+	if err != nil {
+		return nil, status.FromGRPCStatus(err)
+	}
+	return resp, nil
+}
+
+// RegisterAuthServiceGateway registers REST routes on mux that proxy
+// every call to the gRPC server reachable through conn.
+func RegisterAuthServiceGateway(mux *routing.Mux, conn *grpc.ClientConn) error {
+	svc := &gatewayAuthService{client: NewAuthServiceClient(conn)}
+	return RegisterAuthServiceRoutes(mux, svc)
 }
